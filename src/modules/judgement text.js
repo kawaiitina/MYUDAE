@@ -4,9 +4,9 @@ import FredokaOne from "../assets/font/FredokaOne-Regular.ttf";
 
 const container = new PIXI.Container();
 let judgementTexts = [];
-PIXI.Assets.add("FredokaOne", FredokaOne);
+console.log(PIXI.Assets.add("FredokaOne", FredokaOne));
 // await PIXI.Assets.load("FredokaOne");
-PIXI.Assets.load("FredokaOne");
+console.log(PIXI.Assets.load("FredokaOne"));
 const styles = {
   perfect: new PIXI.TextStyle({
     align: "center",
