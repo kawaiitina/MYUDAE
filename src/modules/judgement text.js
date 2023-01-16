@@ -1,48 +1,51 @@
 import * as PIXI from "pixi.js";
 import "@pixi/graphics-extras";
-import FredokaOne from "../assets/font/FredokaOne-Regular.ttf";
+import FredokaOne_Regular from "../assets/font/FredokaOne-Regular.ttf";
 
 const container = new PIXI.Container();
 let judgementTexts = [];
-console.log(PIXI.Assets.add("FredokaOne", FredokaOne));
+let styles;
+PIXI.Assets.add("FredokaOne", FredokaOne_Regular);
 // await PIXI.Assets.load("FredokaOne");
-console.log(PIXI.Assets.load("FredokaOne"));
-const styles = {
-  perfect: new PIXI.TextStyle({
-    align: "center",
-    fontFamily: "Fredokaone Regular",
-    fontSize: 100,
-    fill: [0xfe3894, 0xff7dc9],
-    fillGradientStops: [0.49, 0.5],
-    stroke: 0xffffff,
-    strokeThickness: 5,
-  }),
-  great: new PIXI.TextStyle({
-    align: "center",
-    fontFamily: "Fredokaone Regular",
-    fontSize: 100,
-    fill: [0x953cfa, 0xbe3cfa],
-    fillGradientStops: [0.49, 0.5],
-    stroke: 0xffffff,
-    strokeThickness: 5,
-  }),
-  early: new PIXI.TextStyle({
-    align: "center",
-    fontFamily: "Fredokaone Regular",
-    fontSize: 30,
-    fill: 0x37cafb,
-    stroke: 0x0048ff,
-    strokeThickness: 5,
-  }),
-  late: new PIXI.TextStyle({
-    align: "center",
-    fontFamily: "Fredokaone Regular",
-    fontSize: 30,
-    fill: 0xff009d,
-    stroke: 0x9c1847,
-    strokeThickness: 5,
-  }),
-};
+PIXI.Assets.load("FredokaOne").then((font) => {
+  const FredokaOne = font.family;
+  styles = {
+    perfect: new PIXI.TextStyle({
+      align: "center",
+      fontFamily: FredokaOne,
+      fontSize: 100,
+      fill: [0xfe3894, 0xff7dc9],
+      fillGradientStops: [0.49, 0.5],
+      stroke: 0xffffff,
+      strokeThickness: 5,
+    }),
+    great: new PIXI.TextStyle({
+      align: "center",
+      fontFamily: FredokaOne,
+      fontSize: 100,
+      fill: [0x953cfa, 0xbe3cfa],
+      fillGradientStops: [0.49, 0.5],
+      stroke: 0xffffff,
+      strokeThickness: 5,
+    }),
+    early: new PIXI.TextStyle({
+      align: "center",
+      fontFamily: FredokaOne,
+      fontSize: 30,
+      fill: 0x37cafb,
+      stroke: 0x0048ff,
+      strokeThickness: 5,
+    }),
+    late: new PIXI.TextStyle({
+      align: "center",
+      fontFamily: FredokaOne,
+      fontSize: 30,
+      fill: 0xff009d,
+      stroke: 0x9c1847,
+      strokeThickness: 5,
+    }),
+  };
+});
 
 function getText1(timeDelta) {
   if (-50 <= timeDelta && timeDelta <= 50) {
