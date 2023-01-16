@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
-import sound from "./sound";
-import effect from "./effect";
-import judgementText from "./judgement text";
+import sound from "./sound.js";
+import effect from "./effect.js";
+import judgementText from "./judgement text.js";
 import note_blue from "../assets/sprite/note_blue.png";
 import note_pink from "../assets/sprite/note_pink.png";
 import note_yellow from "../assets/sprite/note_yellow.png";

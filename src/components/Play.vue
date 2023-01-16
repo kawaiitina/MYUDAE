@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { pixi, play, stop, setting } from "../modules/app";
-import { useSettingStore } from "/src/store";
+import { pixi, play, stop, setting } from "../modules/app.js";
+import { useSettingStore } from "/src/store.js";
 import { storeToRefs } from "pinia";
 
 const store = useSettingStore();

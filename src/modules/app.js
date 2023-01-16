@@ -1,13 +1,13 @@
 import * as PIXI from "pixi.js";
-// import background from "./background";
-import bar from "./bar";
-import note from "./note";
-import longNote from "./longnote";
-import judgementLine from "./judgement line";
-import input from "./input";
-import effect from "./effect";
-import judgementText from "./judgement text";
-import sound from "./sound";
+// import background from "./background.js"
+import bar from "./bar.js";
+import note from "./note.js";
+import longNote from "./longnote.js";
+import judgementLine from "./judgement line.js";
+import input from "./input.js";
+import effect from "./effect.js";
+import judgementText from "./judgement text.js";
+import sound from "./sound.js";
 
 // 첫 번째 박자가 판정선에 닿을 때 elapsedTime == 0
 // 유튜브는 한 마디(4박자) 전부터 시작 (elapsedTime은 음수부터 시작)

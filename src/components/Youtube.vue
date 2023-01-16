@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import YouTube from "vue3-youtube";
-import { useSettingStore } from "/src/store";
+import { useSettingStore } from "/src/store.js";
 import { storeToRefs } from "pinia";
 
 const store = useSettingStore();

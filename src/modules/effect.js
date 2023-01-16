@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js";
 import "@pixi/graphics-extras";
-import { hslToRgb } from "./color";
+import { hslToRgb } from "./color.js";
 
 const container = new PIXI.Container();
 let effects = [];

@@ -1,5 +1,5 @@
-import note from "./note";
-import longNote from "./longnote";
+import note from "./note.js";
+import longNote from "./longnote.js";
 
 const recentKeydowns = [];
 const recentKeyups = [];
