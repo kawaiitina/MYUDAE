@@ -29,7 +29,7 @@ function init(options) {
   }
   function getNoteColor(note, longNotes, lane) {
     const index = longNotes[lane].findIndex((longNote) => {
-      return longNote.start <= note && note <= longNote.end;
+      return longNote[0] <= note && note <= longNote[1];
     });
     if (index === -1) {
       if (lane === "top") {
@@ -59,8 +59,8 @@ function init(options) {
   const longNotes = {
     top: score.longNotes.top.map((longNote) => {
       return {
-        startTime: noteToTime(longNote.start),
-        endTime: noteToTime(longNote.end),
+        startTime: noteToTime(longNote[0]),
+        endTime: noteToTime(longNote[1]),
         holdStartTime: null,
         releaseTime: null,
         code: null,
@@ -70,8 +70,8 @@ function init(options) {
     }),
     bottom: score.longNotes.bottom.map((longNote) => {
       return {
-        startTime: noteToTime(longNote.start),
-        endTime: noteToTime(longNote.end),
+        startTime: noteToTime(longNote[0]),
+        endTime: noteToTime(longNote[1]),
         holdStartTime: null,
         releaseTime: null,
         code: null,
