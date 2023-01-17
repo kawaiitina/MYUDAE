@@ -179,9 +179,15 @@ function release(longNotes, lane, elapsedTime, code) {
     longNote.releaseTime = elapsedTime;
   } else if (timeDelta < 0) {
     sound.play("longNote");
-    effect.notePopTop();
-    effect.scatter(380);
-    judgementText.add(380, timeDelta);
+    if (lane === "top") {
+      effect.notePopTop();
+      effect.scatter(380);
+      judgementText.add(380, timeDelta);
+    } else if (lane === "bottom") {
+      effect.notePopBottom();
+      effect.scatter(680);
+      judgementText.add(680, timeDelta);
+    }
     longNotes[lane].splice(index, 1);
   }
 }
