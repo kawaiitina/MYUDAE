@@ -65,7 +65,6 @@ function init(options) {
         releaseTime: null,
         code: null,
         isHeld: false,
-        hasBeenHeld: false,
         isReleased: false,
       };
     }),
@@ -77,7 +76,6 @@ function init(options) {
         releaseTime: null,
         code: null,
         isHeld: false,
-        hasBeenHeld: false,
         isReleased: false,
       };
     }),

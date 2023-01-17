@@ -62,14 +62,14 @@ const container = new PIXI.Container();
 
 function getHeadX(longNote, elapsedTime, noteSpeed) {
   if (
-    (!longNote.isHeld && !longNote.isReleased) || // 다가오기 전
-    (!longNote.hasBeenHeld && longNote.isReleased) // 누른 적 없음
+    !longNote.isHeld &&
+    !longNote.isReleased // 다가오기 전
   ) {
     return 400 + 1.5 * (longNote.startTime - elapsedTime) * noteSpeed;
   } else if (longNote.isHeld) {
     // 누르고 있는 중
     return 400;
-  } else if (longNote.hasBeenHeld && longNote.isReleased) {
+  } else if (longNote.isReleased) {
     // 중간에 놓침
     return (
       400 +
@@ -136,7 +136,12 @@ function hold(longNotes, lane, elapsedTime, code) {
   // 롱노트 처리
   const longNote = longNotes[lane].find((longNote) => {
     const timeDelta = longNote.startTime - elapsedTime;
-    return !longNote.isHeld && -130 <= timeDelta && timeDelta <= 130;
+    return (
+      !longNote.isHeld &&
+      !longNote.isReleased &&
+      -130 <= timeDelta &&
+      timeDelta <= 130
+    );
   });
   if (longNote) {
     const timeDelta = elapsedTime - longNote.startTime;
@@ -159,7 +164,9 @@ function hold(longNotes, lane, elapsedTime, code) {
 }
 function release(longNotes, lane, elapsedTime, code) {
   // 롱노트 처리
-  const index = longNotes[lane].findIndex((longNote) => longNote.code === code);
+  const index = longNotes[lane].findIndex(
+    (longNote) => !longNote.isReleased && longNote.code === code
+  );
   const longNote = longNotes[lane][index];
   if (!longNote) {
     return;
@@ -168,7 +175,6 @@ function release(longNotes, lane, elapsedTime, code) {
   if (timeDelta < -130) {
     //롱노트 놓침
     longNote.isHeld = false;
-    longNote.hasBeenHeld = true;
     longNote.isReleased = true;
     longNote.releaseTime = elapsedTime;
   } else if (timeDelta < 0) {

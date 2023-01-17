@@ -6,7 +6,6 @@ const container = new PIXI.Container();
 let judgementTexts = [];
 let styles;
 PIXI.Assets.add("FredokaOne", FredokaOne_Regular);
-// await PIXI.Assets.load("FredokaOne");
 PIXI.Assets.load("FredokaOne").then((font) => {
   const FredokaOne = font.family;
   styles = {
