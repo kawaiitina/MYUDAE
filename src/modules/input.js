@@ -123,12 +123,18 @@ function update() {
     const recentKeyup = recentKeyups.shift();
     const elapsedTime = recentKeyup.timeStamp - startTime;
     if (keys.top.includes(recentKeyup.code)) {
-      const releaseableLongNote = longNote.getReleaseableLongNote("top");
+      const releaseableLongNote = longNote.getReleaseableLongNote(
+        "top",
+        recentKeyup.code
+      );
       if (releaseableLongNote) {
         longNote.release("top", releaseableLongNote, elapsedTime);
       }
     } else if (keys.bottom.includes(recentKeyup.code)) {
-      const releaseableLongNote = longNote.getReleaseableLongNote("bottom");
+      const releaseableLongNote = longNote.getReleaseableLongNote(
+        "bottom",
+        recentKeyup.code
+      );
       if (releaseableLongNote) {
         longNote.release("bottom", releaseableLongNote, elapsedTime);
       }

@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted } from "vue";
-import { useSettingStore } from "../store.js";
 import { storeToRefs } from "pinia";
+import { useSettingStore } from "../store.js";
 
 const store = useSettingStore();
 const {

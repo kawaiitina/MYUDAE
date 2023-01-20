@@ -238,8 +238,10 @@ function hold(lane, holdableLongNote, elapsedTime, code) {
   holdableLongNote.code = code;
 }
 
-function getReleaseableLongNote(lane) {
-  return longNotes[lane].find((longNote) => longNote.isHeld);
+function getReleaseableLongNote(lane, code) {
+  return longNotes[lane].find(
+    (longNote) => longNote.isHeld && longNote.code === code
+  );
 }
 
 function release(lane, releaseableLongNote, elapsedTime) {
