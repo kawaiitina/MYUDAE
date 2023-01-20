@@ -39,9 +39,9 @@ PIXI.Assets.load("FredokaOne").then((font) => {
 });
 let currentCombo = 0;
 
-function stop() {
-  //   currentCombo = 0;
-}
+function init() {}
+
+function stop() {}
 function add() {
   currentCombo += 1;
   comboText.text = currentCombo;
@@ -81,7 +81,18 @@ const animate = {
     }
     ticker.add(callback);
   },
+  buoy() {
+    let frame = 0;
+    function callback() {
+      frame += 1;
+      const progress = (frame % 1000) / 1000;
+      container.y =
+        container.pivot.y + 200 + 10 * Math.sin(progress * Math.PI * 2);
+      console.log(Math.sin(progress * Math.PI * 2));
+    }
+    ticker.add(callback);
+  },
 };
-
-const combo = { container, stop, add, reset };
+animate.buoy();
+const combo = { container, init, stop, add, reset };
 export default combo;

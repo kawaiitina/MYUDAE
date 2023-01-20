@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import pixi from "./pixi.js";
+import pixi, { ticker } from "./pixi.js";
 import bar from "./bar.js";
 import note from "./note.js";
 import longNote from "./longnote.js";
@@ -37,6 +37,7 @@ function init(options) {
   longNote.init(options);
   bar.init(options);
   input.init(options, startTime);
+  ticker.start();
 }
 
 let updateInterval = null;
@@ -71,6 +72,7 @@ function stop() {
   judgement.stop();
   longNote.stop();
   note.stop();
+  ticker.stop();
 }
 function setting(option) {
   if (option?.volume) {
