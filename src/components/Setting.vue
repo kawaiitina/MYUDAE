@@ -123,6 +123,7 @@ onMounted(() => {
         class="col-3"
         @update:model-value="onVolumeChange"
       />
+      <div class="col-5"></div>
     </q-card-section>
     <q-card-section class="row fit justify-between">
       <q-input
