@@ -1,11 +1,19 @@
 import * as PIXI from "pixi.js";
 import "@pixi/graphics-extras";
-import FredokaOne_Regular from "../assets/font/FredokaOne-Regular.ttf";
+import {
+  JUDGEMENT_LINE_X,
+  JUDEGMENT_LINE_TOP_Y,
+  JUDEGMENT_LINE_BOTTOM_Y,
+} from "./judgement-line.js";
 
 const container = new PIXI.Container();
-let judgementTexts = [];
+let judgements = [];
 let styles;
-PIXI.Assets.add("FredokaOne", FredokaOne_Regular);
+const TIMING_WINDOW = {
+  PERFECT: 50,
+  GREAT: 130,
+};
+
 PIXI.Assets.load("FredokaOne").then((font) => {
   const FredokaOne = font.family;
   styles = {
@@ -47,9 +55,15 @@ PIXI.Assets.load("FredokaOne").then((font) => {
 });
 
 function getText1(timeDelta) {
-  if (-50 <= timeDelta && timeDelta <= 50) {
+  if (
+    -TIMING_WINDOW.PERFECT <= timeDelta &&
+    timeDelta <= TIMING_WINDOW.PERFECT
+  ) {
     return new PIXI.Text("PERFECT", styles.perfect);
-  } else if (timeDelta <= 130 && timeDelta >= -130) {
+  } else if (
+    timeDelta <= TIMING_WINDOW.GREAT &&
+    timeDelta >= -TIMING_WINDOW.GREAT
+  ) {
     return new PIXI.Text("GREAT", styles.great);
   }
 }
@@ -64,17 +78,18 @@ function getText2(timeDelta) {
   }
 }
 
-class JudgementText {
-  constructor(y, timeDelta) {
+class Judgement {
+  constructor(lane, timeDelta) {
     this.birth = performance.now();
     this.lifespan = 800;
     this.isAlive = true;
 
-    const x = 400;
+    const x = JUDGEMENT_LINE_X;
+    const y = lane === "top" ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
+
     this.y = y;
 
     this.container = new PIXI.Container();
-
     this.text1 = getText1(timeDelta);
     this.text1.anchor.set(0.5);
     this.text1.x = x;
@@ -121,20 +136,29 @@ class JudgementText {
 }
 
 function update(now) {
-  judgementTexts.forEach((judgementText) => {
-    judgementText.update(now);
-    if (!judgementText.isAlive) {
-      judgementText.destroy();
+  judgements.forEach((judgement) => {
+    judgement.update(now);
+    if (!judgement.isAlive) {
+      judgement.destroy();
     }
   });
-  judgementTexts = judgementTexts.filter((judgement) => judgement.isAlive);
+  judgements = judgements.filter((judgement) => judgement.isAlive);
 }
-function add(y, timeDelta) {
-  judgementTexts.push(new JudgementText(y, timeDelta));
+function stop() {
+  judgements.forEach((judgement) => {
+    judgement.destroy();
+  });
+  judgements = [];
 }
-const judgementText = {
+
+function add(lane, timeDelta) {
+  judgements.push(new Judgement(lane, timeDelta));
+}
+const judgement = {
   container,
   update,
+  stop,
   add,
 };
-export default judgementText;
+export default judgement;
+export { TIMING_WINDOW };

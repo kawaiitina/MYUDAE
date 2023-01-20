@@ -1,18 +1,24 @@
 import * as PIXI from "pixi.js";
 import "@pixi/graphics-extras";
 import { hslToRgb } from "./color.js";
+import {
+  JUDGEMENT_LINE_X,
+  JUDEGMENT_LINE_TOP_Y,
+  JUDEGMENT_LINE_BOTTOM_Y,
+} from "./judgement-line.js";
 
 const container = new PIXI.Container();
 let effects = [];
 
-class NotePopTop {
-  constructor() {
+class NotePop {
+  constructor(lane) {
     this.birth = performance.now();
     this.lifespan = 200;
     this.isAlive = true;
 
-    const x = 400;
-    const y = 380;
+    const x = JUDGEMENT_LINE_X;
+    const y = lane === "top" ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
+    const color = lane === "top" ? 0x4cbcfc : 0xf85bfe;
     const r = 160;
 
     this.container = new PIXI.Container();
@@ -22,7 +28,7 @@ class NotePopTop {
     this.arcGraphics.arc(x, y, r, 0, 2 * Math.PI);
     this.arcGraphics.closePath();
     this.arcGraphics.lineStyle(0);
-    this.arcGraphics.beginFill(0x4cbcfc);
+    this.arcGraphics.beginFill(color);
     this.arcGraphics.drawCircle(x, y, 0.7 * r);
     this.arcGraphics.endFill();
     this.arcGraphics.lineStyle(0);
@@ -35,7 +41,7 @@ class NotePopTop {
     this.shadowGraphics = new PIXI.Graphics();
     this.shadowFilter = new PIXI.filters.BlurFilter();
     this.shadowGraphics.lineStyle(0);
-    this.shadowGraphics.beginFill(0x4cbcfc);
+    this.shadowGraphics.beginFill(color);
     this.shadowGraphics.drawCircle(x, y, 1.2 * r);
     this.shadowGraphics.endFill();
     this.shadowGraphics.alpha = 0.5;
@@ -71,82 +77,14 @@ class NotePopTop {
     this.shadowFilter.destroy();
   }
 }
-
-class NotePopBottom {
-  constructor() {
-    this.birth = performance.now();
-    this.lifespan = 200;
-    this.isAlive = true;
-
-    const x = 400;
-    const y = 680;
-    const r = 160;
-
-    this.container = new PIXI.Container();
-    this.arcGraphics = new PIXI.Graphics();
-    this.arcFilter = new PIXI.filters.BlurFilter();
-    this.arcGraphics.lineStyle(5, 0xffffff);
-    this.arcGraphics.arc(x, y, r, 0, 2 * Math.PI);
-    this.arcGraphics.closePath();
-    this.arcGraphics.lineStyle(0);
-    this.arcGraphics.beginFill(0xf85bfe);
-    this.arcGraphics.drawCircle(x, y, 0.7 * r);
-    this.arcGraphics.endFill();
-    this.arcGraphics.lineStyle(0);
-    this.arcGraphics.beginFill(0xffffff);
-    this.arcGraphics.drawCircle(x, y, 0.5 * r);
-    this.arcGraphics.endFill();
-    this.arcFilter.blur = 6;
-    this.arcGraphics.filters = [this.arcFilter];
-
-    this.shadowGraphics = new PIXI.Graphics();
-    this.shadowFilter = new PIXI.filters.BlurFilter();
-    this.shadowGraphics.lineStyle(0);
-    this.shadowGraphics.beginFill(0xf85bfe);
-    this.shadowGraphics.drawCircle(x, y, 1.2 * r);
-    this.shadowGraphics.endFill();
-    this.shadowGraphics.alpha = 0.5;
-    this.shadowFilter.blur = 10;
-    this.shadowGraphics.filters = [this.shadowFilter];
-
-    this.container.pivot.x = x;
-    this.container.pivot.y = y;
-    this.container.x = x;
-    this.container.y = y;
-    this.container.addChild(this.shadowGraphics);
-    this.container.addChild(this.arcGraphics);
-
-    container.addChild(this.container);
-  }
-  update(now) {
-    const elapsedTime = now - this.birth;
-    const progress = elapsedTime / this.lifespan;
-    if (elapsedTime > this.lifespan) {
-      this.isAlive = false;
-      return;
-    }
-
-    this.container.scale.x = -(progress ** 2) + 2 * progress;
-    this.container.scale.y = -(progress ** 2) + 2 * progress;
-    this.container.alpha = Math.min((1 - progress) * 2, 1);
-    this.arcFilter.blur = 2 + progress * 4;
-  }
-  destroy() {
-    this.container.destroy();
-    this.arcGraphics.destroy();
-    this.arcFilter.destroy();
-    this.shadowGraphics.destroy();
-    this.shadowFilter.destroy();
-  }
-}
-
 class Scatter {
-  constructor(y) {
+  constructor(lane) {
     this.birth = performance.now();
     this.lifespan = 1000;
     this.isAlive = true;
 
     const starCount = Math.floor(6 + Math.random() * 5);
+    const y = lane === "top" ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
 
     this.container = new PIXI.Container();
     this.stars = [];
@@ -156,7 +94,7 @@ class Scatter {
 
       const outerRadius = 30 + Math.random() * 10;
       const innerRadius = outerRadius * 0.6;
-      const x = 400;
+      const x = JUDGEMENT_LINE_X;
       const vx = -0.5 + Math.random() * 2;
       const vy = -1.5 * Math.random();
       const omega = 0.01 * (Math.random() - 0.5);
@@ -172,7 +110,6 @@ class Scatter {
         )
       );
       graphics.drawStar(x, y, 5, outerRadius, innerRadius);
-      // this.graphics.drawStar(400, y, 5, outerRadius, innerRadius);
       graphics.endFill();
       this.container.addChild(graphics);
       this.stars.push({
@@ -218,21 +155,24 @@ function update(now) {
   });
   effects = effects.filter((effect) => effect.isAlive);
 }
+function stop() {
+  effects.forEach((effect) => {
+    effect.destroy();
+  });
+  effects = [];
+}
 
-function notePopTop() {
-  effects.push(new NotePopTop());
+function notePop(lane) {
+  effects.push(new NotePop(lane));
 }
-function notePopBottom() {
-  effects.push(new NotePopBottom());
-}
-function scatter(y) {
-  effects.push(new Scatter(y));
+function scatter(lane) {
+  effects.push(new Scatter(lane));
 }
 const effect = {
   container,
   update,
-  notePopTop,
-  notePopBottom,
+  stop,
   scatter,
+  notePop,
 };
 export default effect;

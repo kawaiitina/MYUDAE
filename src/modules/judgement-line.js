@@ -3,28 +3,30 @@ import judgement_line_blue from "../assets/sprite/judgement_line_blue.png";
 import judgement_line_pink from "../assets/sprite/judgement_line_pink.png";
 import spinner from "../assets/sprite/spinner.png";
 
+const JUDGEMENT_LINE_X = 400;
+const JUDEGMENT_LINE_TOP_Y = 380;
+const JUDEGMENT_LINE_BOTTOM_Y = 680;
+
 const blue = PIXI.Sprite.from(judgement_line_blue);
 blue.anchor.set(0.5);
-blue.x = 400;
-blue.y = 380;
+blue.x = JUDGEMENT_LINE_X;
+blue.y = JUDEGMENT_LINE_TOP_Y;
 blue.scale.set(0.5);
-
 const pink = PIXI.Sprite.from(judgement_line_pink);
 pink.anchor.set(0.5);
-pink.x = 400;
-pink.y = 680;
+pink.x = JUDGEMENT_LINE_X;
+pink.y = JUDEGMENT_LINE_BOTTOM_Y;
 pink.scale.set(0.5);
-
 const spinnerTop = PIXI.Sprite.from(spinner);
 spinnerTop.anchor.set(0.5);
-spinnerTop.x = 400;
-spinnerTop.y = 380;
-
+spinnerTop.x = JUDGEMENT_LINE_X;
+spinnerTop.y = JUDEGMENT_LINE_TOP_Y;
+spinnerTop.scale.set(0.5);
 const spinnerBottom = PIXI.Sprite.from(spinner);
 spinnerBottom.anchor.set(0.5);
-spinnerBottom.x = 400;
-spinnerBottom.y = 680;
-
+spinnerBottom.x = JUDGEMENT_LINE_X;
+spinnerBottom.y = JUDEGMENT_LINE_BOTTOM_Y;
+spinnerBottom.scale.set(0.5);
 const container = new PIXI.Container();
 container.alpha = 0.8;
 container.addChild(spinnerTop);
@@ -32,7 +34,15 @@ container.addChild(spinnerBottom);
 container.addChild(blue);
 container.addChild(pink);
 
-function update(elapsedTime, bpm, playbackRate) {
+let bpm;
+let playbackRate;
+
+function init(options) {
+  bpm = options.score.bpm;
+  playbackRate = options.playbackRate;
+}
+
+function update(elapsedTime) {
   const bounceInterval = ((60 * 1000) / (bpm * playbackRate)) * 2;
   const bounceProgress = (elapsedTime % bounceInterval) / bounceInterval;
   let scale;
@@ -59,5 +69,8 @@ function update(elapsedTime, bpm, playbackRate) {
   spinnerBottom.rotation = rotation;
 }
 
-const judgementLine = { container, update };
+function stop() {}
+
+const judgementLine = { container, init, update, stop };
 export default judgementLine;
+export { JUDGEMENT_LINE_X, JUDEGMENT_LINE_TOP_Y, JUDEGMENT_LINE_BOTTOM_Y };

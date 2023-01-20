@@ -1,213 +1,86 @@
 import * as PIXI from "pixi.js";
-// import background from "./background.js"
+import pixi from "./pixi.js";
 import bar from "./bar.js";
 import note from "./note.js";
 import longNote from "./longnote.js";
-import judgementLine from "./judgement line.js";
+import judgementLine from "./judgement-line.js";
 import input from "./input.js";
 import effect from "./effect.js";
-import judgementText from "./judgement text.js";
+import judgement from "./judgement.js";
 import sound from "./sound.js";
+import uiText from "./ui-text.js";
+import combo from "./combo.js";
 
-// 첫 번째 박자가 판정선에 닿을 때 elapsedTime == 0
-// 유튜브는 한 마디(4박자) 전부터 시작 (elapsedTime은 음수부터 시작)
+pixi.stage.addChild(
+  bar.container,
+  judgementLine.container,
+  effect.container,
+  judgement.container,
+  longNote.container,
+  note.container,
+  combo.container,
+  uiText.container
+);
 
-const pixi = new PIXI.Application({
-  width: 1920,
-  height: 1080,
-  background: 0x181818,
-  // antialias: true,
-  backgroundAlpha: 0.9,
-  // backgroundAlpha: 0,
-});
+let startTime;
 
 function init(options) {
-  const { score, playbackRate, userOffset } = options;
-  const { bpm } = score;
-  function noteToTime(note) {
-    return (note / 12) * (60 / (bpm * playbackRate)) * 1000 + userOffset;
-  }
-  function getNoteColor(note, longNotes, lane) {
-    const index = longNotes[lane].findIndex((longNote) => {
-      return longNote[0] <= note && note <= longNote[1];
-    });
-    if (index === -1) {
-      if (lane === "top") {
-        return "blue";
-      } else if (lane === "bottom") {
-        return "pink";
-      }
-    } else {
-      return "yellow";
-    }
-  }
-
-  const notes = {
-    top: score.notes.top.map((note) => {
-      return {
-        time: noteToTime(note),
-        color: getNoteColor(note, score.longNotes, "top"),
-      };
-    }),
-    bottom: score.notes.bottom.map((note) => {
-      return {
-        time: noteToTime(note),
-        color: getNoteColor(note, score.longNotes, "bottom"),
-      };
-    }),
-  };
-  const longNotes = {
-    top: score.longNotes.top.map((longNote) => {
-      return {
-        startTime: noteToTime(longNote[0]),
-        endTime: noteToTime(longNote[1]),
-        holdStartTime: null,
-        releaseTime: null,
-        code: null,
-        isHeld: false,
-        isReleased: false,
-      };
-    }),
-    bottom: score.longNotes.bottom.map((longNote) => {
-      return {
-        startTime: noteToTime(longNote[0]),
-        endTime: noteToTime(longNote[1]),
-        holdStartTime: null,
-        releaseTime: null,
-        code: null,
-        isHeld: false,
-        isReleased: false,
-      };
-    }),
-  };
-  const bars = Array(score.beats)
-    .fill(null)
-    .map((el, i) => {
-      return {
-        time: (60 / (bpm * playbackRate)) * 1000 * i,
-        color: score.bars.includes(i) ? "red" : "gray",
-      };
-    });
-
-  const startTime =
+  // 유튜브는 한 마디(4박자) 전부터 시작함.
+  // videoCurrentTime이 options.score.offset이 될 때가 startTime임
+  startTime =
     performance.now() +
-    (options.score.offset * 1000 - options.videoCurrentTime) / playbackRate;
+    (options.score.offset * 1000 - options.videoCurrentTime) /
+      options.playbackRate;
 
-  const keyToCode = {
-    Q: "KeyQ",
-    W: "KeyW",
-    E: "KeyE",
-    R: "KeyR",
-    T: "KeyT",
-    Y: "KeyY",
-    U: "KeyU",
-    I: "KeyI",
-    O: "KeyO",
-    P: "KeyP",
-    "[": "BracketLeft",
-    "]": "BracketRight",
-    A: "KeyA",
-    S: "KeyS",
-    D: "KeyD",
-    F: "KeyF",
-    G: "KeyG",
-    H: "KeyH",
-    J: "KeyJ",
-    K: "KeyK",
-    L: "KeyL",
-    ";": "Semicolon",
-    "'": "Quote",
-    Z: "KeyZ",
-    X: "KeyX",
-    C: "KeyC",
-    V: "KeyV",
-    B: "KeyB",
-    N: "KeyN",
-    M: "KeyM",
-    ",": "Comma",
-    ".": "Period",
-    "/": "Slash",
-  };
-  const keys = {
-    top: options.keyTop.map((key) => keyToCode[key]),
-    bottom: options.keyBottom.map((key) => keyToCode[key]),
-  };
-
-  // pixi.stage.addChild(background.container);
-  pixi.stage.addChild(bar.container);
-  pixi.stage.addChild(judgementLine.container);
-  pixi.stage.addChild(effect.container);
-  pixi.stage.addChild(judgementText.container);
-  pixi.stage.addChild(longNote.container);
-  pixi.stage.addChild(note.container);
-  input.init();
-
-  return {
-    notes,
-    longNotes,
-    bars,
-    startTime,
-    noteSpeed: options.noteSpeed,
-    keys,
-    bpm: score.bpm,
-    playbackRate,
-  };
+  judgementLine.init(options);
+  note.init(options);
+  longNote.init(options);
+  bar.init(options);
+  input.init(options, startTime);
 }
 
 let updateInterval = null;
-// let data = null;
-function update(data) {
-  const {
-    notes,
-    longNotes,
-    bars,
-    startTime,
-    noteSpeed,
-    keys,
-    bpm,
-    playbackRate,
-  } = data;
+function update() {
+  // 첫 번째 박자에 있는 노트가 판정선에 닿을 때 elapsedTime == 0
   const now = performance.now();
   const elapsedTime = now - startTime;
 
-  input.update({
-    notes,
-    longNotes,
-    startTime,
-    keys,
-  });
-  judgementLine.update(elapsedTime, bpm, playbackRate);
-  bar.update(bars, noteSpeed, elapsedTime);
-  note.update(notes, noteSpeed, elapsedTime);
-  longNote.update(longNotes, noteSpeed, elapsedTime);
+  input.update();
+  judgementLine.update(elapsedTime);
+  bar.update(elapsedTime);
+  note.update(elapsedTime);
+  longNote.update(elapsedTime);
   effect.update(now);
-  judgementText.update(now);
+  judgement.update(now);
   // raf = requestAnimationFrame(function () {
   //   update(data);
   // });
 }
 function play(options) {
-  const data = init(options);
+  init(options);
 
-  updateInterval = setInterval(function () {
-    update(data);
-  }, 4);
+  updateInterval = setInterval(update, 4);
 }
 function stop() {
   // cancelAnimationFrame(raf);
   clearInterval(updateInterval);
   input.stop();
-  // pixi.stage.removeChild(background.container);
-  pixi.stage.removeChild(bar.container);
-  pixi.stage.removeChild(judgementLine.container);
-  pixi.stage.removeChild(effect.container);
-  pixi.stage.removeChild(judgementText.container);
-  pixi.stage.removeChild(longNote.container);
-  pixi.stage.removeChild(note.container);
+  bar.stop();
+  judgementLine.stop();
+  effect.stop();
+  judgement.stop();
+  longNote.stop();
+  note.stop();
 }
 function setting(option) {
   if (option?.volume) {
     sound.changeVolume(option.volume);
+  }
+  if (option?.score) {
+    uiText.changeScore(option.score);
+  }
+  if (option?.playbackRate) {
+    uiText.changePlaybackRate(option.playbackRate);
   }
 }
 export { pixi, play, stop, setting };

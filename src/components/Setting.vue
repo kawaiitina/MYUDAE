@@ -5,29 +5,20 @@ import { storeToRefs } from "pinia";
 
 const store = useSettingStore();
 const {
+  loadString,
   score,
-  playbackRate,
+  recentScores,
   volume,
   userOffset,
   noteSpeed,
   keyTop,
   keyBottom,
-  loadString,
 } = storeToRefs(store);
 
-const emit = defineEmits(["playback-rate-change", "volume-change"]);
-function onPlaybackRateChange() {
-  emit("playback-rate-change", playbackRate.value);
-}
+const emit = defineEmits(["volume-change", "score-change"]);
 function onVolumeChange() {
   emit("volume-change", volume.value);
 }
-const playbackRateMarkerLabel = [
-  { value: 25, label: "x0.25" },
-  { value: 50, label: "x0.5" },
-  { value: 75, label: "x0.75" },
-  { value: 100, label: "x1" },
-];
 const keys = [
   "Q",
   "W",
@@ -66,8 +57,23 @@ const keys = [
 
 function load() {
   score.value = JSON.parse(loadString.value);
-  localStorage.setItem("load", loadString.value);
+  recentScores.value.push(score.value);
+  recentScores.value.sort((score1, score2) =>
+    score1.title.localeCompare(score2.title)
+  );
+  localStorage.setItem("loadString", loadString.value);
+  localStorage.setItem("recentScores", recentScores.value);
   loadString.value = "";
+  emit("score-change", score.value);
+}
+
+function loadRecentScore(recentScore) {
+  score.value = recentScore;
+  localStorage.setItem("loadString", JSON.stringify(recentScore));
+  emit("score-change", score.value);
+}
+function deleteRecentScores(i) {
+  recentScores.value.splice(i, 1);
 }
 
 onMounted(() => {
@@ -80,11 +86,14 @@ onMounted(() => {
     noteSpeed.value = data.noteSpeed;
     keyTop.value = data.keyTop;
     keyBottom.value = data.keyBottom;
+    recentScores.value = data.recentScores;
+
     emit("volume-change", volume.value);
   }
-  const loadString = localStorage.getItem("load");
+  const loadString = localStorage.getItem("loadString");
   if (loadString) {
     score.value = JSON.parse(loadString);
+    emit("score-change", score.value);
   }
   addEventListener("beforeunload", function save() {
     const data = {
@@ -94,6 +103,7 @@ onMounted(() => {
       noteSpeed: noteSpeed.value,
       keyTop: keyTop.value,
       keyBottom: keyBottom.value,
+      recentScores: recentScores.value,
     };
     localStorage.setItem("setting", JSON.stringify(data));
   });
@@ -101,32 +111,18 @@ onMounted(() => {
 </script>
 
 <template>
-  <q-card class="q-pa-lg" style="width: 960px">
+  <q-card class="q-mt-md q-pa-lg" style="width: 960px">
     <q-card-section class="row fit justify-between">
-      <div class="text-h6 col-1">배속({{ playbackRate }}%)</div>
-      <q-slider
-        v-model="playbackRate"
-        markers
-        :marker-labels="playbackRateMarkerLabel"
-        :step="5"
-        snap
-        :min="0"
-        :inner-min="25"
-        :max="150"
-        class="col-4"
-        @change="onPlaybackRateChange"
-      />
-      <div>
-        <div class="text-h6 col-1">효과음</div>
-      </div>
+      <!-- <div class="text-h6 col-2">재생 속도</div>
+      <div class="col-3 text-h6">{{ playbackRate }}%</div> -->
+      <div class="text-h6 col-1">효과음</div>
       <q-slider
         v-model="volume"
         :min="0"
         :max="100"
-        class="col-4"
+        class="col-3"
         @update:model-value="onVolumeChange"
       />
-      <!-- 알 수 없는 이유로 q-slider의 v-model이 0일 때 이벤트가 발생하지 않음 -->
     </q-card-section>
     <q-card-section class="row fit justify-between">
       <q-input
@@ -146,18 +142,14 @@ onMounted(() => {
       <q-select
         v-model="keyTop"
         label="키 설정(위)"
-        use-input
         multiple
-        input-debounce="0"
         :options="keys"
         class="col-3"
       />
       <q-select
         v-model="keyBottom"
         label="키 설정(아래)"
-        use-input
         multiple
-        input-debounce="0"
         :options="keys"
         class="col-3"
       />
@@ -178,6 +170,28 @@ onMounted(() => {
           @click="load"
         />
       </div>
+      <template v-if="recentScores.length > 0">
+        <q-list bordered separator class="q-mt-md">
+          <q-item
+            v-for="(recentScore, i) in recentScores"
+            clickable
+            v-ripple
+            @click="loadRecentScore(recentScore)"
+          >
+            <q-item-section>
+              {{ recentScore.title }} - {{ recentScore.artist }}
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                round
+                flat
+                icon="close"
+                @click.stop="deleteRecentScores(i)"
+              />
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </template>
     </q-card-section>
     <q-separator />
     <q-card-section>
