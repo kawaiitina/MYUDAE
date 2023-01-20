@@ -171,28 +171,26 @@ onMounted(() => {
           @click="load"
         />
       </div>
-      <template v-if="recentScores.length > 0">
-        <q-list bordered separator class="q-mt-md">
-          <q-item
-            v-for="(recentScore, i) in recentScores"
-            clickable
-            v-ripple
-            @click="loadRecentScore(recentScore)"
-          >
-            <q-item-section>
-              {{ recentScore.title }} - {{ recentScore.artist }}
-            </q-item-section>
-            <q-item-section side>
-              <q-btn
-                round
-                flat
-                icon="close"
-                @click.stop="deleteRecentScores(i)"
-              />
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </template>
+      <q-list v-if="recentScores.length > 0" bordered separator class="q-mt-md">
+        <q-item
+          v-for="(recentScore, i) in recentScores"
+          clickable
+          v-ripple
+          @click="loadRecentScore(recentScore)"
+        >
+          <q-item-section>
+            {{ recentScore.title }} - {{ recentScore.artist }}
+          </q-item-section>
+          <q-item-section side>
+            <q-btn
+              round
+              flat
+              icon="close"
+              @click.stop="deleteRecentScores(i)"
+            />
+          </q-item-section>
+        </q-item>
+      </q-list>
     </q-card-section>
     <q-separator />
     <q-card-section>
