@@ -137,34 +137,58 @@ function update(elapsedTime) {
     function getNoteX(noteTime, elapsedTime, noteSpeed) {
       return JUDGEMENT_LINE_X + 1.5 * (noteTime - elapsedTime) * noteSpeed;
     }
-    sprites.blue.forEach((sprite) => container.removeChild(sprite));
-    sprites.yellowTop.forEach((sprite) => container.removeChild(sprite));
+    sprites.blue.forEach((sprite) => {
+      sprite.alpha = 1;
+      container.removeChild(sprite);
+    });
+    sprites.yellowTop.forEach((sprite) => {
+      sprite.alpha = 1;
+      container.removeChild(sprite);
+    });
     notes.top.forEach((note, i) => {
       if (i >= 50) {
         return;
       }
       if (note.color === "blue") {
         sprites.blue[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
+        if (note.missed) {
+          sprites.blue[i].alpha = 0.5;
+        }
         container.addChild(sprites.blue[i]);
       } else if (note.color === "yellow") {
         sprites.yellowTop[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
+        if (note.missed) {
+          sprites.yellowTop[i].alpha = 0.5;
+        }
         container.addChild(sprites.yellowTop[i]);
       }
     });
     while (elapsedTime - notes.bottom[0]?.time > 1000) {
       notes.bottom.shift();
     }
-    sprites.pink.forEach((sprite) => container.removeChild(sprite));
-    sprites.yellowBottom.forEach((sprite) => container.removeChild(sprite));
+    sprites.pink.forEach((sprite) => {
+      sprite.alpha = 1;
+      container.removeChild(sprite);
+    });
+    sprites.yellowBottom.forEach((sprite) => {
+      sprite.alpha = 1;
+      container.removeChild(sprite);
+    });
     notes.bottom.forEach((note, i) => {
       if (i >= 50) {
         return;
       }
       if (note.color === "pink") {
         sprites.pink[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
+        if (note.missed) {
+          sprites.pink[i].alpha = 0.5;
+        }
         container.addChild(sprites.pink[i]);
       } else if (note.color === "yellow") {
         sprites.yellowBottom[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
+        if (note.missed) {
+          sprites.yellowBottom[i].alpha = 0.5;
+        }
         container.addChild(sprites.yellowBottom[i]);
       }
     });

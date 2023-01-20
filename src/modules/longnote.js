@@ -84,6 +84,7 @@ function init(options) {
         code: null,
         isHeld: false,
         isReleased: false,
+        missed: false,
       };
     }),
     bottom: score.longNotes.bottom.map((longNote) => {
@@ -95,6 +96,7 @@ function init(options) {
         code: null,
         isHeld: false,
         isReleased: false,
+        missed: false,
       };
     }),
   };
@@ -103,6 +105,7 @@ function init(options) {
 
 function update(elapsedTime) {
   removePassedLongNote(elapsedTime);
+  checkMissedLongNote(elapsedTime);
   autoRelease(elapsedTime);
   drawLongNote(elapsedTime);
 
@@ -112,6 +115,26 @@ function update(elapsedTime) {
     }
     while (elapsedTime - longNotes.bottom[0]?.endTime > 1000) {
       longNotes.bottom.shift();
+    }
+  }
+  function checkMissedLongNote(elapsedTime) {
+    const missedTopNote = longNotes.top.find(
+      (longNote) =>
+        !longNote.isHeld &&
+        longNote.startTime + TIMING_WINDOW.GREAT < elapsedTime
+    );
+    if (missedTopNote) {
+      missedTopNote.missed = true;
+      combo.reset();
+    }
+    const missedBottomNote = longNotes.bottom.find(
+      (longNote) =>
+        !longNote.isHeld &&
+        longNote.startTime + TIMING_WINDOW.GREAT < elapsedTime
+    );
+    if (missedBottomNote) {
+      missedBottomNote.missed = true;
+      combo.reset();
     }
   }
   function autoRelease(elapsedTime) {
@@ -158,9 +181,18 @@ function update(elapsedTime) {
         JUDGEMENT_LINE_X + 1.5 * (longNote.endTime - elapsedTime) * noteSpeed
       );
     }
-    sprites.blueStaff.forEach((sprite) => container.removeChild(sprite));
-    sprites.blueStar1.forEach((sprite) => container.removeChild(sprite));
-    sprites.blueStar2.forEach((sprite) => container.removeChild(sprite));
+    sprites.blueStaff.forEach((sprite) => {
+      sprite.alpha = 1;
+      container.removeChild(sprite);
+    });
+    sprites.blueStar1.forEach((sprite) => {
+      sprite.alpha = 1;
+      container.removeChild(sprite);
+    });
+    sprites.blueStar2.forEach((sprite) => {
+      sprite.alpha = 1;
+      container.removeChild(sprite);
+    });
     longNotes.top.forEach((longNote, i) => {
       if (i >= 25) {
         return;
@@ -173,14 +205,28 @@ function update(elapsedTime) {
       sprites.blueStar1[i].rotation = -elapsedTime / 200;
       sprites.blueStar2[i].x = tailX;
       sprites.blueStar2[i].rotation = -elapsedTime / 200;
+      if (longNote.missed) {
+        sprites.blueStaff[i].alpha = 0.5;
+        sprites.blueStar1[i].alpha = 0.5;
+        sprites.blueStar2[i].alpha = 0.5;
+      }
 
       container.addChild(sprites.blueStaff[i]);
       container.addChild(sprites.blueStar1[i]);
       container.addChild(sprites.blueStar2[i]);
     });
-    sprites.pinkStaff.forEach((sprite) => container.removeChild(sprite));
-    sprites.pinkStar1.forEach((sprite) => container.removeChild(sprite));
-    sprites.pinkStar2.forEach((sprite) => container.removeChild(sprite));
+    sprites.pinkStaff.forEach((sprite) => {
+      sprite.alpha = 1;
+      container.removeChild(sprite);
+    });
+    sprites.pinkStar1.forEach((sprite) => {
+      sprite.alpha = 1;
+      container.removeChild(sprite);
+    });
+    sprites.pinkStar2.forEach((sprite) => {
+      sprite.alpha = 1;
+      container.removeChild(sprite);
+    });
     longNotes.bottom.forEach((longNote, i) => {
       if (i >= 25) {
         return;
@@ -193,6 +239,11 @@ function update(elapsedTime) {
       sprites.pinkStar1[i].rotation = -elapsedTime / 200;
       sprites.pinkStar2[i].x = tailX;
       sprites.pinkStar2[i].rotation = -elapsedTime / 200;
+      if (longNote.missed) {
+        sprites.pinkStaff[i].alpha = 0.5;
+        sprites.pinkStar1[i].alpha = 0.5;
+        sprites.pinkStar2[i].alpha = 0.5;
+      }
 
       container.addChild(sprites.pinkStaff[i]);
       container.addChild(sprites.pinkStar1[i]);
