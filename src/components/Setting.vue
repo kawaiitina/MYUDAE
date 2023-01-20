@@ -171,7 +171,7 @@ onMounted(() => {
           @click="load"
         />
       </div>
-      <!-- <q-list v-if="recentScores.length > 0" bordered separator class="q-mt-md">
+      <q-list v-if="recentScores.length > 0" bordered separator class="q-mt-md">
         <q-item
           v-for="(recentScore, i) in recentScores"
           clickable
@@ -190,7 +190,7 @@ onMounted(() => {
             />
           </q-item-section>
         </q-item>
-      </q-list> -->
+      </q-list>
     </q-card-section>
     <q-separator />
     <q-card-section>
