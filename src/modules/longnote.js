@@ -120,6 +120,7 @@ function update(elapsedTime) {
   function checkMissedLongNote(elapsedTime) {
     const missedTopNote = longNotes.top.find(
       (longNote) =>
+        !longNote.missed &&
         !longNote.isHeld &&
         longNote.startTime + TIMING_WINDOW.GREAT < elapsedTime
     );
@@ -129,6 +130,7 @@ function update(elapsedTime) {
     }
     const missedBottomNote = longNotes.bottom.find(
       (longNote) =>
+        !longNote.missed &&
         !longNote.isHeld &&
         longNote.startTime + TIMING_WINDOW.GREAT < elapsedTime
     );
