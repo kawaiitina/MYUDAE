@@ -49,7 +49,7 @@ function init(options) {
     });
 }
 
-function update(elapsedTime) {
+function draw(elapsedTime) {
   function getBarX(barTime, elapsedTime, noteSpeed) {
     return JUDGEMENT_LINE_X + 1.5 * (barTime - elapsedTime) * noteSpeed;
   }
@@ -78,5 +78,5 @@ function stop() {
   bars = [];
 }
 
-const note = { container, init, update, stop };
+const note = { container, init, draw, stop };
 export default note;

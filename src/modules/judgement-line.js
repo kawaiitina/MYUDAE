@@ -42,7 +42,7 @@ function init(options) {
   playbackRate = options.playbackRate;
 }
 
-function update(elapsedTime) {
+function draw(elapsedTime) {
   const bounceInterval = ((60 * 1000) / (bpm * playbackRate)) * 2;
   const bounceProgress = (elapsedTime % bounceInterval) / bounceInterval;
   let scale;
@@ -71,6 +71,6 @@ function update(elapsedTime) {
 
 function stop() {}
 
-const judgementLine = { container, init, update, stop };
+const judgementLine = { container, init, draw, stop };
 export default judgementLine;
 export { JUDGEMENT_LINE_X, JUDEGMENT_LINE_TOP_Y, JUDEGMENT_LINE_BOTTOM_Y };

@@ -22,11 +22,12 @@ pixi.stage.addChild(
   uiText.container
 );
 
+// 유튜브는 한 마디(4박자) 전부터 시작함.
+// videoCurrentTime이 options.score.offset이 될 때가 startTime임
+// 첫 번째 박자에 있는 노트가 판정선에 닿을 때 elapsedTime == 0
 let startTime;
 
 function init(options) {
-  // 유튜브는 한 마디(4박자) 전부터 시작함.
-  // videoCurrentTime이 options.score.offset이 될 때가 startTime임
   startTime =
     performance.now() +
     (options.score.offset * 1000 - options.videoCurrentTime) /
@@ -40,27 +41,35 @@ function init(options) {
 }
 
 let updateInterval = null;
+let raf;
 function update() {
-  // 첫 번째 박자에 있는 노트가 판정선에 닿을 때 elapsedTime == 0
   const now = performance.now();
   const elapsedTime = now - startTime;
 
   input.update();
-  judgementLine.update(elapsedTime);
-  bar.update(elapsedTime);
   note.update(elapsedTime);
   longNote.update(elapsedTime);
-  // raf = requestAnimationFrame(function () {
-  //   update(data);
-  // });
 }
+function draw() {
+  const now = performance.now();
+  const elapsedTime = now - startTime;
+
+  judgementLine.draw(elapsedTime);
+  bar.draw(elapsedTime);
+  note.draw(elapsedTime);
+  longNote.draw(elapsedTime);
+
+  raf = requestAnimationFrame(draw);
+}
+
 function play(options) {
   init(options);
 
   updateInterval = setInterval(update, 4);
+  raf = requestAnimationFrame(draw);
 }
 function stop() {
-  // cancelAnimationFrame(raf);
+  cancelAnimationFrame(raf);
   clearInterval(updateInterval);
   input.stop();
   bar.stop();

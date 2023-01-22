@@ -47,11 +47,13 @@ const sprites = {
       return sprite;
     }),
 };
-let notes;
+const notes = {
+  top: [],
+  bottom: [],
+};
 let noteSpeed;
 
 const container = new PIXI.Container();
-
 function init(options) {
   const { score, playbackRate, userOffset } = options;
   function noteToTime(note) {
@@ -71,138 +73,112 @@ function init(options) {
       return "yellow";
     }
   }
-  notes = {
-    top: score.notes.top.map((note) => {
-      return {
-        time: noteToTime(note),
-        color: getNoteColor(note, score.longNotes, "top"),
-        missed: false,
-      };
-    }),
-    bottom: score.notes.bottom.map((note) => {
-      return {
-        time: noteToTime(note),
-        color: getNoteColor(note, score.longNotes, "bottom"),
-        missed: false,
-      };
-    }),
-  };
+  notes.top = score.notes.top.map((note) => {
+    return {
+      time: noteToTime(note),
+      color: getNoteColor(note, score.longNotes, "top"),
+      missed: false,
+    };
+  });
+  notes.bottom = score.notes.bottom.map((note) => {
+    return {
+      time: noteToTime(note),
+      color: getNoteColor(note, score.longNotes, "bottom"),
+      missed: false,
+    };
+  });
   noteSpeed = options.noteSpeed;
-  return {
-    top: score.notes.top.map((note) => {
-      return {
-        time: noteToTime(note),
-        color: getNoteColor(note, score.longNotes, "top"),
-      };
-    }),
-    bottom: score.notes.bottom.map((note) => {
-      return {
-        time: noteToTime(note),
-        color: getNoteColor(note, score.longNotes, "bottom"),
-      };
-    }),
-  };
 }
 
 function update(elapsedTime) {
-  removePassedNote(elapsedTime);
-  checkMissedNote(elapsedTime);
-  drawNote(elapsedTime);
+  while (elapsedTime - notes.top[0]?.time > 1000) {
+    notes.top.shift();
+  }
+  while (elapsedTime - notes.bottom[0]?.time > 1000) {
+    notes.bottom.shift();
+  }
 
-  function removePassedNote(elapsedTime) {
-    while (elapsedTime - notes.top[0]?.time > 1000) {
-      notes.top.shift();
-    }
-    while (elapsedTime - notes.bottom[0]?.time > 1000) {
-      notes.bottom.shift();
-    }
+  const missedTopNote = notes.top.find(
+    (note) => !note.missed && note.time + TIMING_WINDOW.GREAT < elapsedTime
+  );
+  if (missedTopNote) {
+    missedTopNote.missed = true;
+    combo.reset();
   }
-  function checkMissedNote(elapsedTime) {
-    const missedTopNote = notes.top.find(
-      (note) => !note.missed && note.time + TIMING_WINDOW.GREAT < elapsedTime
-    );
-    if (missedTopNote) {
-      missedTopNote.missed = true;
-      combo.reset();
-    }
-    const missedBottomNote = notes.bottom.find(
-      (note) => !note.missed && note.time + TIMING_WINDOW.GREAT < elapsedTime
-    );
-    if (missedBottomNote) {
-      missedBottomNote.missed = true;
-      combo.reset();
-    }
+  const missedBottomNote = notes.bottom.find(
+    (note) => !note.missed && note.time + TIMING_WINDOW.GREAT < elapsedTime
+  );
+  if (missedBottomNote) {
+    missedBottomNote.missed = true;
+    combo.reset();
   }
-  function drawNote(elapsedTime) {
-    function getNoteX(noteTime, elapsedTime, noteSpeed) {
-      return JUDGEMENT_LINE_X + 1.5 * (noteTime - elapsedTime) * noteSpeed;
-    }
-    sprites.blue.forEach((sprite) => {
-      sprite.alpha = 1;
-      container.removeChild(sprite);
-    });
-    sprites.yellowTop.forEach((sprite) => {
-      sprite.alpha = 1;
-      container.removeChild(sprite);
-    });
-    notes.top.forEach((note, i) => {
-      if (i >= 50) {
-        return;
-      }
-      if (note.color === "blue") {
-        sprites.blue[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
-        if (note.missed) {
-          sprites.blue[i].alpha = 0.5;
-        }
-        container.addChild(sprites.blue[i]);
-      } else if (note.color === "yellow") {
-        sprites.yellowTop[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
-        if (note.missed) {
-          sprites.yellowTop[i].alpha = 0.5;
-        }
-        container.addChild(sprites.yellowTop[i]);
-      }
-    });
-    while (elapsedTime - notes.bottom[0]?.time > 1000) {
-      notes.bottom.shift();
-    }
-    sprites.pink.forEach((sprite) => {
-      sprite.alpha = 1;
-      container.removeChild(sprite);
-    });
-    sprites.yellowBottom.forEach((sprite) => {
-      sprite.alpha = 1;
-      container.removeChild(sprite);
-    });
-    notes.bottom.forEach((note, i) => {
-      if (i >= 50) {
-        return;
-      }
-      if (note.color === "pink") {
-        sprites.pink[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
-        if (note.missed) {
-          sprites.pink[i].alpha = 0.5;
-        }
-        container.addChild(sprites.pink[i]);
-      } else if (note.color === "yellow") {
-        sprites.yellowBottom[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
-        if (note.missed) {
-          sprites.yellowBottom[i].alpha = 0.5;
-        }
-        container.addChild(sprites.yellowBottom[i]);
-      }
-    });
+}
+function draw(elapsedTime) {
+  function getNoteX(noteTime, elapsedTime, noteSpeed) {
+    return JUDGEMENT_LINE_X + 1.5 * (noteTime - elapsedTime) * noteSpeed;
   }
+
+  sprites.blue.forEach((sprite) => {
+    sprite.alpha = 1;
+    container.removeChild(sprite);
+  });
+  sprites.yellowTop.forEach((sprite) => {
+    sprite.alpha = 1;
+    container.removeChild(sprite);
+  });
+  notes.top.forEach((note, i) => {
+    if (i >= 50) {
+      return;
+    }
+    if (note.color === "blue") {
+      sprites.blue[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
+      if (note.missed) {
+        sprites.blue[i].alpha = 0.5;
+      }
+      container.addChild(sprites.blue[i]);
+    } else if (note.color === "yellow") {
+      sprites.yellowTop[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
+      if (note.missed) {
+        sprites.yellowTop[i].alpha = 0.5;
+      }
+      container.addChild(sprites.yellowTop[i]);
+    }
+  });
+
+  sprites.pink.forEach((sprite) => {
+    sprite.alpha = 1;
+    container.removeChild(sprite);
+  });
+  sprites.yellowBottom.forEach((sprite) => {
+    sprite.alpha = 1;
+    container.removeChild(sprite);
+  });
+  notes.bottom.forEach((note, i) => {
+    if (i >= 50) {
+      return;
+    }
+    if (note.color === "pink") {
+      sprites.pink[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
+      if (note.missed) {
+        sprites.pink[i].alpha = 0.5;
+      }
+      container.addChild(sprites.pink[i]);
+    } else if (note.color === "yellow") {
+      sprites.yellowBottom[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
+      if (note.missed) {
+        sprites.yellowBottom[i].alpha = 0.5;
+      }
+      container.addChild(sprites.yellowBottom[i]);
+    }
+  });
 }
 function stop() {
   sprites.blue.forEach((sprite) => container.removeChild(sprite));
   sprites.yellowTop.forEach((sprite) => container.removeChild(sprite));
   sprites.pink.forEach((sprite) => container.removeChild(sprite));
   sprites.yellowBottom.forEach((sprite) => container.removeChild(sprite));
-  notes = {
-    top: [],
-    bottom: [],
-  };
+  notes.top = [];
+  notes.bottom = [];
 }
 
 function getPlayableNote(lane, elapsedTime) {
@@ -227,5 +203,5 @@ function hit(lane, playableNote, elapsedTime) {
   notes[lane].splice(index, 1);
 }
 
-const note = { container, init, update, stop, getPlayableNote, hit };
+const note = { container, init, update, draw, stop, getPlayableNote, hit };
 export default note;

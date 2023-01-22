@@ -104,154 +104,144 @@ function init(options) {
 }
 
 function update(elapsedTime) {
-  removePassedLongNote(elapsedTime);
-  checkMissedLongNote(elapsedTime);
-  autoRelease(elapsedTime);
-  drawLongNote(elapsedTime);
+  while (elapsedTime - longNotes.top[0]?.endTime > 1000) {
+    longNotes.top.shift();
+  }
+  while (elapsedTime - longNotes.bottom[0]?.endTime > 1000) {
+    longNotes.bottom.shift();
+  }
 
-  function removePassedLongNote(elapsedTime) {
-    while (elapsedTime - longNotes.top[0]?.endTime > 1000) {
-      longNotes.top.shift();
-    }
-    while (elapsedTime - longNotes.bottom[0]?.endTime > 1000) {
-      longNotes.bottom.shift();
-    }
+  const missedTopNote = longNotes.top.find(
+    (longNote) =>
+      !longNote.missed &&
+      !longNote.isHeld &&
+      longNote.startTime + TIMING_WINDOW.GREAT < elapsedTime
+  );
+  if (missedTopNote) {
+    missedTopNote.missed = true;
+    combo.reset();
   }
-  function checkMissedLongNote(elapsedTime) {
-    const missedTopNote = longNotes.top.find(
-      (longNote) =>
-        !longNote.missed &&
-        !longNote.isHeld &&
-        longNote.startTime + TIMING_WINDOW.GREAT < elapsedTime
-    );
-    if (missedTopNote) {
-      missedTopNote.missed = true;
-      combo.reset();
-    }
-    const missedBottomNote = longNotes.bottom.find(
-      (longNote) =>
-        !longNote.missed &&
-        !longNote.isHeld &&
-        longNote.startTime + TIMING_WINDOW.GREAT < elapsedTime
-    );
-    if (missedBottomNote) {
-      missedBottomNote.missed = true;
-      combo.reset();
-    }
+  const missedBottomNote = longNotes.bottom.find(
+    (longNote) =>
+      !longNote.missed &&
+      !longNote.isHeld &&
+      longNote.startTime + TIMING_WINDOW.GREAT < elapsedTime
+  );
+  if (missedBottomNote) {
+    missedBottomNote.missed = true;
+    combo.reset();
   }
-  function autoRelease(elapsedTime) {
-    const releaseableLongNoteTop = longNotes.top.find(
-      (longNote) => longNote.isHeld && elapsedTime >= longNote.endTime - 4
-    );
-    if (releaseableLongNoteTop) {
-      release("top", releaseableLongNoteTop, elapsedTime);
-    }
-    const releaseableLongNoteBottom = longNotes.bottom.find(
-      (longNote) => longNote.isHeld && elapsedTime >= longNote.endTime - 4
-    );
-    if (releaseableLongNoteBottom) {
-      release("bottom", releaseableLongNoteBottom, elapsedTime);
-    }
+
+  const releaseableLongNoteTop = longNotes.top.find(
+    (longNote) => longNote.isHeld && elapsedTime >= longNote.endTime - 4
+  );
+  if (releaseableLongNoteTop) {
+    release("top", releaseableLongNoteTop, elapsedTime);
   }
-  function drawLongNote(elapsedTime) {
-    function getHeadX(longNote, elapsedTime, noteSpeed) {
-      if (
-        !longNote.isHeld &&
-        !longNote.isReleased // 다가오기 전
-      ) {
-        return (
-          JUDGEMENT_LINE_X +
-          1.5 * (longNote.startTime - elapsedTime) * noteSpeed
-        );
-      } else if (longNote.isHeld) {
-        // 누르고 있는 중
-        return JUDGEMENT_LINE_X;
-      } else if (longNote.isReleased) {
-        // 중간에 놓침
-        return (
-          JUDGEMENT_LINE_X +
-          1.5 *
-            (longNote.startTime -
-              elapsedTime +
-              (longNote.releaseTime - longNote.holdStartTime)) *
-            noteSpeed
-        );
-      }
-    }
-    function getTailX(longNote, elapsedTime, noteSpeed) {
+  const releaseableLongNoteBottom = longNotes.bottom.find(
+    (longNote) => longNote.isHeld && elapsedTime >= longNote.endTime - 4
+  );
+  if (releaseableLongNoteBottom) {
+    release("bottom", releaseableLongNoteBottom, elapsedTime);
+  }
+}
+function draw(elapsedTime) {
+  function getHeadX(longNote, elapsedTime, noteSpeed) {
+    if (
+      !longNote.isHeld &&
+      !longNote.isReleased // 다가오기 전
+    ) {
       return (
-        JUDGEMENT_LINE_X + 1.5 * (longNote.endTime - elapsedTime) * noteSpeed
+        JUDGEMENT_LINE_X + 1.5 * (longNote.startTime - elapsedTime) * noteSpeed
+      );
+    } else if (longNote.isHeld) {
+      // 누르고 있는 중
+      return JUDGEMENT_LINE_X;
+    } else if (longNote.isReleased) {
+      // 중간에 놓침
+      return (
+        JUDGEMENT_LINE_X +
+        1.5 *
+          (longNote.startTime -
+            elapsedTime +
+            (longNote.releaseTime - longNote.holdStartTime)) *
+          noteSpeed
       );
     }
-    sprites.blueStaff.forEach((sprite) => {
-      sprite.alpha = 1;
-      container.removeChild(sprite);
-    });
-    sprites.blueStar1.forEach((sprite) => {
-      sprite.alpha = 1;
-      container.removeChild(sprite);
-    });
-    sprites.blueStar2.forEach((sprite) => {
-      sprite.alpha = 1;
-      container.removeChild(sprite);
-    });
-    longNotes.top.forEach((longNote, i) => {
-      if (i >= 25) {
-        return;
-      }
-      const headX = getHeadX(longNote, elapsedTime, noteSpeed);
-      const tailX = getTailX(longNote, elapsedTime, noteSpeed);
-      sprites.blueStaff[i].x = (tailX + headX) / 2;
-      sprites.blueStaff[i].scale.x = (tailX - headX) / 100;
-      sprites.blueStar1[i].x = headX;
-      sprites.blueStar1[i].rotation = -elapsedTime / 200;
-      sprites.blueStar2[i].x = tailX;
-      sprites.blueStar2[i].rotation = -elapsedTime / 200;
-      if (longNote.missed) {
-        sprites.blueStaff[i].alpha = 0.5;
-        sprites.blueStar1[i].alpha = 0.5;
-        sprites.blueStar2[i].alpha = 0.5;
-      }
-
-      container.addChild(sprites.blueStaff[i]);
-      container.addChild(sprites.blueStar1[i]);
-      container.addChild(sprites.blueStar2[i]);
-    });
-    sprites.pinkStaff.forEach((sprite) => {
-      sprite.alpha = 1;
-      container.removeChild(sprite);
-    });
-    sprites.pinkStar1.forEach((sprite) => {
-      sprite.alpha = 1;
-      container.removeChild(sprite);
-    });
-    sprites.pinkStar2.forEach((sprite) => {
-      sprite.alpha = 1;
-      container.removeChild(sprite);
-    });
-    longNotes.bottom.forEach((longNote, i) => {
-      if (i >= 25) {
-        return;
-      }
-      const headX = getHeadX(longNote, elapsedTime, noteSpeed);
-      const tailX = getTailX(longNote, elapsedTime, noteSpeed);
-      sprites.pinkStaff[i].x = (tailX + headX) / 2;
-      sprites.pinkStaff[i].scale.x = (tailX - headX) / 100;
-      sprites.pinkStar1[i].x = headX;
-      sprites.pinkStar1[i].rotation = -elapsedTime / 200;
-      sprites.pinkStar2[i].x = tailX;
-      sprites.pinkStar2[i].rotation = -elapsedTime / 200;
-      if (longNote.missed) {
-        sprites.pinkStaff[i].alpha = 0.5;
-        sprites.pinkStar1[i].alpha = 0.5;
-        sprites.pinkStar2[i].alpha = 0.5;
-      }
-
-      container.addChild(sprites.pinkStaff[i]);
-      container.addChild(sprites.pinkStar1[i]);
-      container.addChild(sprites.pinkStar2[i]);
-    });
   }
+  function getTailX(longNote, elapsedTime, noteSpeed) {
+    return (
+      JUDGEMENT_LINE_X + 1.5 * (longNote.endTime - elapsedTime) * noteSpeed
+    );
+  }
+  sprites.blueStaff.forEach((sprite) => {
+    sprite.alpha = 1;
+    container.removeChild(sprite);
+  });
+  sprites.blueStar1.forEach((sprite) => {
+    sprite.alpha = 1;
+    container.removeChild(sprite);
+  });
+  sprites.blueStar2.forEach((sprite) => {
+    sprite.alpha = 1;
+    container.removeChild(sprite);
+  });
+  longNotes.top.forEach((longNote, i) => {
+    if (i >= 25) {
+      return;
+    }
+    const headX = getHeadX(longNote, elapsedTime, noteSpeed);
+    const tailX = getTailX(longNote, elapsedTime, noteSpeed);
+    sprites.blueStaff[i].x = (tailX + headX) / 2;
+    sprites.blueStaff[i].scale.x = (tailX - headX) / 100;
+    sprites.blueStar1[i].x = headX;
+    sprites.blueStar1[i].rotation = -elapsedTime / 200;
+    sprites.blueStar2[i].x = tailX;
+    sprites.blueStar2[i].rotation = -elapsedTime / 200;
+    if (longNote.missed) {
+      sprites.blueStaff[i].alpha = 0.5;
+      sprites.blueStar1[i].alpha = 0.5;
+      sprites.blueStar2[i].alpha = 0.5;
+    }
+
+    container.addChild(sprites.blueStaff[i]);
+    container.addChild(sprites.blueStar1[i]);
+    container.addChild(sprites.blueStar2[i]);
+  });
+  sprites.pinkStaff.forEach((sprite) => {
+    sprite.alpha = 1;
+    container.removeChild(sprite);
+  });
+  sprites.pinkStar1.forEach((sprite) => {
+    sprite.alpha = 1;
+    container.removeChild(sprite);
+  });
+  sprites.pinkStar2.forEach((sprite) => {
+    sprite.alpha = 1;
+    container.removeChild(sprite);
+  });
+  longNotes.bottom.forEach((longNote, i) => {
+    if (i >= 25) {
+      return;
+    }
+    const headX = getHeadX(longNote, elapsedTime, noteSpeed);
+    const tailX = getTailX(longNote, elapsedTime, noteSpeed);
+    sprites.pinkStaff[i].x = (tailX + headX) / 2;
+    sprites.pinkStaff[i].scale.x = (tailX - headX) / 100;
+    sprites.pinkStar1[i].x = headX;
+    sprites.pinkStar1[i].rotation = -elapsedTime / 200;
+    sprites.pinkStar2[i].x = tailX;
+    sprites.pinkStar2[i].rotation = -elapsedTime / 200;
+    if (longNote.missed) {
+      sprites.pinkStaff[i].alpha = 0.5;
+      sprites.pinkStar1[i].alpha = 0.5;
+      sprites.pinkStar2[i].alpha = 0.5;
+    }
+
+    container.addChild(sprites.pinkStaff[i]);
+    container.addChild(sprites.pinkStar1[i]);
+    container.addChild(sprites.pinkStar2[i]);
+  });
 }
 function stop() {
   sprites.blueStaff.forEach((sprite) => container.removeChild(sprite));
@@ -324,6 +314,7 @@ const longNote = {
   container,
   init,
   update,
+  draw,
   stop,
   getHoldableLongNote,
   hold,
