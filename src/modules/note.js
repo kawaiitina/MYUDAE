@@ -16,7 +16,7 @@ import combo from "./combo.js";
 const sprites = {
   blue: Array(50)
     .fill(null)
-    .map((el) => {
+    .map(() => {
       const sprite = PIXI.Sprite.from(note_blue);
       sprite.y = JUDEGMENT_LINE_TOP_Y;
       sprite.anchor.set(0.5);
@@ -24,7 +24,7 @@ const sprites = {
     }),
   pink: Array(50)
     .fill(null)
-    .map((el) => {
+    .map(() => {
       const sprite = PIXI.Sprite.from(note_pink);
       sprite.y = JUDEGMENT_LINE_BOTTOM_Y;
       sprite.anchor.set(0.5);
@@ -32,7 +32,7 @@ const sprites = {
     }),
   yellowTop: Array(50)
     .fill(null)
-    .map((el) => {
+    .map(() => {
       const sprite = PIXI.Sprite.from(note_yellow);
       sprite.y = JUDEGMENT_LINE_TOP_Y;
       sprite.anchor.set(0.5);
@@ -40,7 +40,7 @@ const sprites = {
     }),
   yellowBottom: Array(50)
     .fill(null)
-    .map((el) => {
+    .map(() => {
       const sprite = PIXI.Sprite.from(note_yellow);
       sprite.y = JUDEGMENT_LINE_BOTTOM_Y;
       sprite.anchor.set(0.5);

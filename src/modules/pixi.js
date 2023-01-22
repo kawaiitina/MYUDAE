@@ -9,6 +9,7 @@ const pixi = new PIXI.Application({
 });
 PIXI.Assets.add("FredokaOne", FredokaOne_Regular);
 const ticker = new PIXI.Ticker();
+ticker.start();
 
 export default pixi;
 export { ticker };

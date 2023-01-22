@@ -10,7 +10,7 @@ const container = new PIXI.Container();
 const sprites = {
   red: Array(10)
     .fill(null)
-    .map((el) => {
+    .map(() => {
       const sprite = PIXI.Sprite.from(bar_red);
       sprite.y = 540;
       sprite.anchor.set(0.5);
@@ -19,7 +19,7 @@ const sprites = {
     }),
   gray: Array(10)
     .fill(null)
-    .map((el) => {
+    .map(() => {
       const sprite = PIXI.Sprite.from(bar_gray);
       sprite.y = 540;
       sprite.anchor.set(0.5);

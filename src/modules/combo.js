@@ -35,7 +35,7 @@ PIXI.Assets.load("FredokaOne").then((font) => {
   container.pivot.x = container.width / 2;
   container.pivot.y = container.height / 2;
   container.x = container.pivot.x + 960;
-  container.y = container.pivot.y + 200;
+  container.y = container.pivot.y + 150;
   container.addChild(comboText, comboUnit);
 });
 let currentCombo = 0;
@@ -46,7 +46,7 @@ function stop() {}
 function add() {
   currentCombo += 1;
   comboText.text = currentCombo;
-  animate.comboAdd(comboText);
+  comboAddAnimation(comboText);
 }
 function reset() {
   if (currentCombo === 0) {
@@ -54,10 +54,45 @@ function reset() {
   }
   currentCombo = 0;
   comboText.text = currentCombo;
-  animate.comboReset(comboText);
+  comboResetAnimation(comboText);
 }
 
-animate.comboBuoy(container);
+comboBuoyAnimation(container);
+
+function comboAddAnimation(container) {
+  animate.once(
+    container,
+    function (container, progress) {
+      container.scale.set(1 + progress / 2.5);
+    },
+    function (container) {
+      container.scale.set(1);
+    },
+    100
+  );
+}
+function comboResetAnimation(container) {
+  animate.once(
+    container,
+    function (container, progress) {
+      container.scale.set(1 - progress / 2.5);
+    },
+    function (container) {
+      container.scale.set(1);
+    },
+    100
+  );
+}
+function comboBuoyAnimation(container) {
+  animate.repeat(
+    container,
+    function (container, progress) {
+      container.y =
+        container.pivot.y + 150 + 10 * Math.sin(progress * Math.PI * 2);
+    },
+    6000
+  );
+}
 
 const combo = { container, init, stop, add, reset };
 export default combo;

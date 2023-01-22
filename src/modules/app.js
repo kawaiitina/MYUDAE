@@ -37,7 +37,6 @@ function init(options) {
   longNote.init(options);
   bar.init(options);
   input.init(options, startTime);
-  ticker.start();
 }
 
 let updateInterval = null;
@@ -51,8 +50,6 @@ function update() {
   bar.update(elapsedTime);
   note.update(elapsedTime);
   longNote.update(elapsedTime);
-  effect.update(now);
-  judgement.update(now);
   // raf = requestAnimationFrame(function () {
   //   update(data);
   // });
@@ -68,11 +65,8 @@ function stop() {
   input.stop();
   bar.stop();
   judgementLine.stop();
-  effect.stop();
-  judgement.stop();
   longNote.stop();
   note.stop();
-  ticker.stop();
 }
 function setting(option) {
   if (option?.volume) {

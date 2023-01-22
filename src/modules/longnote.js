@@ -17,7 +17,7 @@ import combo from "./combo.js";
 const sprites = {
   blueStar1: Array(25)
     .fill(null)
-    .map((el) => {
+    .map(() => {
       const sprite = PIXI.Sprite.from(longnote_blue);
       sprite.y = JUDEGMENT_LINE_TOP_Y;
       sprite.anchor.set(0.5);
@@ -25,7 +25,7 @@ const sprites = {
     }),
   blueStar2: Array(25)
     .fill(null)
-    .map((el) => {
+    .map(() => {
       const sprite = PIXI.Sprite.from(longnote_blue);
       sprite.y = JUDEGMENT_LINE_TOP_Y;
       sprite.anchor.set(0.5);
@@ -33,7 +33,7 @@ const sprites = {
     }),
   blueStaff: Array(25)
     .fill(null)
-    .map((el) => {
+    .map(() => {
       const sprite = PIXI.Sprite.from(staff_blue);
       sprite.y = JUDEGMENT_LINE_TOP_Y;
       sprite.anchor.set(0.5);
@@ -41,7 +41,7 @@ const sprites = {
     }),
   pinkStar1: Array(25)
     .fill(null)
-    .map((el) => {
+    .map(() => {
       const sprite = PIXI.Sprite.from(longnote_pink);
       sprite.y = JUDEGMENT_LINE_BOTTOM_Y;
       sprite.anchor.set(0.5);
@@ -49,7 +49,7 @@ const sprites = {
     }),
   pinkStar2: Array(25)
     .fill(null)
-    .map((el) => {
+    .map(() => {
       const sprite = PIXI.Sprite.from(longnote_pink);
       sprite.y = JUDEGMENT_LINE_BOTTOM_Y;
       sprite.anchor.set(0.5);
@@ -57,7 +57,7 @@ const sprites = {
     }),
   pinkStaff: Array(25)
     .fill(null)
-    .map((el) => {
+    .map(() => {
       const sprite = PIXI.Sprite.from(staff_pink);
       sprite.y = JUDEGMENT_LINE_BOTTOM_Y;
       sprite.anchor.set(0.5);

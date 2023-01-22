@@ -6,15 +6,15 @@ import {
   JUDEGMENT_LINE_TOP_Y,
   JUDEGMENT_LINE_BOTTOM_Y,
 } from "./judgement-line.js";
+import { ticker } from "./pixi.js";
 
 const container = new PIXI.Container();
-let effects = [];
+const effects = [];
 
 class NotePop {
   constructor(lane) {
-    this.birth = performance.now();
+    this.age = 0;
     this.lifespan = 200;
-    this.isAlive = true;
 
     const x = JUDGEMENT_LINE_X;
     const y = lane === "top" ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
@@ -57,18 +57,15 @@ class NotePop {
 
     container.addChild(this.container);
   }
-  update(now) {
-    const elapsedTime = now - this.birth;
-    const progress = elapsedTime / this.lifespan;
-    if (elapsedTime > this.lifespan) {
-      this.isAlive = false;
+  update = () => {
+    this.age += ticker.deltaMS;
+    const progress = this.age / this.lifespan;
+    if (progress > 1) {
       return;
     }
-
-    this.container.scale.x = -(progress ** 2) + 2 * progress;
-    this.container.scale.y = -(progress ** 2) + 2 * progress;
+    this.container.scale.set(-(progress ** 2) + 2 * progress);
     this.container.alpha = Math.min((1 - progress) * 2, 1);
-  }
+  };
   destroy() {
     this.container.destroy();
     this.arcGraphics.destroy();
@@ -79,9 +76,8 @@ class NotePop {
 }
 class Scatter {
   constructor(lane) {
-    this.birth = performance.now();
+    this.age = 0;
     this.lifespan = 1000;
-    this.isAlive = true;
 
     const starCount = Math.floor(6 + Math.random() * 5);
     const y = lane === "top" ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
@@ -97,7 +93,7 @@ class Scatter {
       const x = JUDGEMENT_LINE_X;
       const vx = -0.5 + Math.random() * 2;
       const vy = -1.5 * Math.random();
-      const omega = 0.01 * (Math.random() - 0.5);
+      const omega = 0.03 * (Math.random() - 0.5);
 
       graphics.pivot.x = x;
       graphics.pivot.y = y;
@@ -122,57 +118,54 @@ class Scatter {
 
     container.addChild(this.container);
   }
-  update(now) {
-    const elapsedTime = now - this.birth;
-    const progress = elapsedTime / this.lifespan;
-    if (elapsedTime > this.lifespan) {
-      this.isAlive = false;
+  update = () => {
+    this.age += ticker.deltaMS;
+    const progress = this.age / this.lifespan;
+    if (progress > 1) {
       return;
     }
+
     const g = 0.003;
 
     this.stars.forEach((star) => {
-      const x = star.vx * (progress * 1000);
-      const y = star.vy * (progress * 1000) + (g * (progress * 1000) ** 2) / 2;
+      const x = star.vx * (progress * this.lifespan);
+      const y =
+        star.vy * (progress * this.lifespan) +
+        (g * (progress * this.lifespan) ** 2) / 2;
       star.graphics.x = star.graphics.pivot.x + x;
       star.graphics.y = star.graphics.pivot.y + y;
-      star.graphics.rotation = star.omega * (progress * 1000);
+      star.graphics.rotation = star.omega * (progress * this.lifespan);
       star.graphics.scale.set(1 - progress, 1 - progress);
     });
-  }
+  };
   destroy() {
-    this.container.destroy();
     this.stars.forEach((star) => star.graphics.destroy());
+    this.container.destroy();
   }
-}
-
-function update(now) {
-  effects.forEach((effect) => {
-    effect.update(now);
-    if (!effect.isAlive) {
-      effect.destroy();
-    }
-  });
-  effects = effects.filter((effect) => effect.isAlive);
-}
-function stop() {
-  effects.forEach((effect) => {
-    effect.destroy();
-  });
-  effects = [];
 }
 
 function notePop(lane) {
-  effects.push(new NotePop(lane));
+  const effect = new NotePop(lane);
+  ticker.add(effect.update);
+  effects.push(effect);
 }
 function scatter(lane) {
-  effects.push(new Scatter(lane));
+  const effect = new Scatter(lane);
+  ticker.add(effect.update);
+  effects.push(effect);
 }
+
+ticker.add(function () {
+  let index = effects.findIndex((effect) => effect.age > effect.lifespan);
+  while (index !== -1) {
+    effects[index].destroy();
+    effects.splice(index, 1);
+    index = effects.findIndex((effect) => effect.age > effect.lifespan);
+  }
+});
 const effect = {
   container,
-  update,
-  stop,
-  scatter,
   notePop,
+  scatter,
 };
 export default effect;
