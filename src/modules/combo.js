@@ -1,5 +1,6 @@
 import * as PIXI from "pixi.js";
-import { ticker } from "./pixi.js";
+// import { ticker } from "./pixi.js";
+import animate from "./animate.js";
 
 const container = new PIXI.Container();
 let comboText;
@@ -45,7 +46,7 @@ function stop() {}
 function add() {
   currentCombo += 1;
   comboText.text = currentCombo;
-  animate.pop();
+  animate.comboAdd(comboText);
 }
 function reset() {
   if (currentCombo === 0) {
@@ -53,46 +54,10 @@ function reset() {
   }
   currentCombo = 0;
   comboText.text = currentCombo;
-  animate.shrink();
+  animate.comboReset(comboText);
 }
 
-const animate = {
-  pop() {
-    let frame = 0;
-    function callback() {
-      frame += 1;
-      comboText.scale.set(1 + frame / 15);
-      if (frame > 6) {
-        comboText.scale.set(1);
-        ticker.remove(callback);
-      }
-    }
-    ticker.add(callback);
-  },
-  shrink() {
-    let frame = 0;
-    function callback() {
-      frame += 1;
-      comboText.scale.set(1 - frame / 15);
-      if (frame > 12) {
-        comboText.scale.set(1);
-        ticker.remove(callback);
-      }
-    }
-    ticker.add(callback);
-  },
-  buoy() {
-    let frame = 0;
-    function callback() {
-      frame += 1;
-      const progress = (frame % 1000) / 1000;
-      container.y =
-        container.pivot.y + 200 + 10 * Math.sin(progress * Math.PI * 2);
-      console.log(Math.sin(progress * Math.PI * 2));
-    }
-    ticker.add(callback);
-  },
-};
-animate.buoy();
+animate.comboBuoy(container);
+
 const combo = { container, init, stop, add, reset };
 export default combo;
