@@ -66,7 +66,10 @@ const sprites = {
 };
 const container = new PIXI.Container();
 
-let longNotes;
+const longNotes = {
+  top: [],
+  bottom: [],
+};
 let noteSpeed;
 
 function init(options) {
@@ -74,32 +77,30 @@ function init(options) {
   function noteToTime(note) {
     return (note / 12) * (60 / (score.bpm * playbackRate)) * 1000 + userOffset;
   }
-  longNotes = {
-    top: score.longNotes.top.map((longNote) => {
-      return {
-        startTime: noteToTime(longNote[0]),
-        endTime: noteToTime(longNote[1]),
-        holdStartTime: null,
-        releaseTime: null,
-        code: null,
-        isHeld: false,
-        isReleased: false,
-        missed: false,
-      };
-    }),
-    bottom: score.longNotes.bottom.map((longNote) => {
-      return {
-        startTime: noteToTime(longNote[0]),
-        endTime: noteToTime(longNote[1]),
-        holdStartTime: null,
-        releaseTime: null,
-        code: null,
-        isHeld: false,
-        isReleased: false,
-        missed: false,
-      };
-    }),
-  };
+  longNotes.top = score.longNotes.top.map((longNote) => {
+    return {
+      startTime: noteToTime(longNote[0]),
+      endTime: noteToTime(longNote[1]),
+      holdStartTime: null,
+      releaseTime: null,
+      code: null,
+      isHeld: false,
+      isReleased: false,
+      missed: false,
+    };
+  });
+  longNotes.bottom = score.longNotes.bottom.map((longNote) => {
+    return {
+      startTime: noteToTime(longNote[0]),
+      endTime: noteToTime(longNote[1]),
+      holdStartTime: null,
+      releaseTime: null,
+      code: null,
+      isHeld: false,
+      isReleased: false,
+      missed: false,
+    };
+  });
   noteSpeed = options.noteSpeed;
 }
 
@@ -251,10 +252,8 @@ function stop() {
   sprites.pinkStar1.forEach((sprite) => container.removeChild(sprite));
   sprites.pinkStar2.forEach((sprite) => container.removeChild(sprite));
 
-  longNotes = {
-    top: [],
-    bottom: [],
-  };
+  longNotes.top = [];
+  longNotes.bottom = [];
 }
 
 function getHoldableLongNote(lane, elapsedTime) {
