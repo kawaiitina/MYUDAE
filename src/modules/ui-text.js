@@ -12,8 +12,8 @@ playbackRate.x = 1910;
 playbackRate.y = 1070;
 
 const title = new PIXI.Text("", style);
-title.anchor.set(0.5, 1);
-title.x = 960;
+title.anchor.set(0, 1);
+title.x = 10;
 title.y = 1070;
 
 container.addChild(playbackRate, title);
