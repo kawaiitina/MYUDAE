@@ -15,7 +15,7 @@ function play(which) {
     longNoteHitSound.play();
   }
 }
-function changeVolume(value) {
+function changeSfxVolume(value) {
   // 알 수 없는 이유로 q-slider의 v-model이 0일 때 이벤트가 발생하지 않음
   if (value <= 1) {
     noteHitSound.mute(true);
@@ -30,7 +30,7 @@ function changeVolume(value) {
 
 const sound = {
   play,
-  changeVolume,
+  changeSfxVolume,
 };
 
 export default sound;

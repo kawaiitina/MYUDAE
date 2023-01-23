@@ -7,9 +7,10 @@ export const useSettingStore = defineStore("setting", () => {
   const recentScores = ref([]);
 
   const playbackRate = ref(100);
-  const volume = ref(50);
+  const sfxVolume = ref(50);
+  const youtubeVolume = ref(100);
   const userOffset = ref(0);
-  const noteSpeed = ref(100);
+  const noteSpeedRate = ref(100);
   const keyTop = ref(["D", "F"]);
   const keyBottom = ref(["J", "K"]);
 
@@ -18,9 +19,10 @@ export const useSettingStore = defineStore("setting", () => {
     score,
     recentScores,
     playbackRate,
-    volume,
+    sfxVolume,
+    youtubeVolume,
     userOffset,
-    noteSpeed,
+    noteSpeedRate,
     keyTop,
     keyBottom,
   };

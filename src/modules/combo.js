@@ -1,5 +1,4 @@
 import * as PIXI from "pixi.js";
-// import { ticker } from "./pixi.js";
 import animate from "./animate.js";
 
 const container = new PIXI.Container();

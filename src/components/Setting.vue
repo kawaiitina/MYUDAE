@@ -8,17 +8,27 @@ const {
   loadString,
   score,
   recentScores,
-  volume,
+  playbackRate,
+  sfxVolume,
+  youtubeVolume,
   userOffset,
-  noteSpeed,
+  noteSpeedRate,
   keyTop,
   keyBottom,
 } = storeToRefs(store);
 
-const emit = defineEmits(["volume-change", "score-change"]);
-function onVolumeChange() {
-  emit("volume-change", volume.value);
+const emit = defineEmits([
+  "sfx-volume-change",
+  "youtube-volume-change",
+  "score-change",
+]);
+function onSfxVolumeChange() {
+  emit("sfx-volume-change", sfxVolume.value);
 }
+function onYoutubeVolumeChange() {
+  emit("youtube-volume-change", youtubeVolume.value);
+}
+
 const keys = [
   "Q",
   "W",
@@ -62,7 +72,7 @@ function load() {
     score1.title.localeCompare(score2.title)
   );
   localStorage.setItem("loadString", loadString.value);
-  localStorage.setItem("recentScores", recentScores.value);
+  localStorage.setItem("recentScores", JSON.stringify(recentScores.value));
   loadString.value = "";
   emit("score-change", score.value);
 }
@@ -80,15 +90,16 @@ onMounted(() => {
   const settingString = localStorage.getItem("setting");
   if (settingString) {
     const data = JSON.parse(settingString);
-    // playbackRate.value = data.playbackRate;
-    volume.value = data.volume;
+    playbackRate.value = data.playbackRate;
+    sfxVolume.value = data.sfxVolume;
+    youtubeVolume.value = data.youtubeVolume;
     userOffset.value = data.userOffset;
-    noteSpeed.value = data.noteSpeed;
+    noteSpeedRate.value = data.noteSpeedRate;
     keyTop.value = data.keyTop;
     keyBottom.value = data.keyBottom;
-    recentScores.value = data.recentScores;
+    recentScores.value = JSON.parse(data.recentScores);
 
-    emit("volume-change", volume.value);
+    emit("sfx-volume-change", sfxVolume.value);
   }
   const loadString = localStorage.getItem("loadString");
   if (loadString) {
@@ -97,13 +108,14 @@ onMounted(() => {
   }
   addEventListener("beforeunload", function save() {
     const data = {
-      // playbackRate: playbackRate.value,
-      volume: volume.value,
+      playbackRate: playbackRate.value,
+      sfxVolume: sfxVolume.value,
+      youtubeVolume: youtubeVolume.value,
       userOffset: userOffset.value,
-      noteSpeed: noteSpeed.value,
+      noteSpeedRate: noteSpeedRate.value,
       keyTop: keyTop.value,
       keyBottom: keyBottom.value,
-      recentScores: recentScores.value,
+      recentScores: JSON.stringify(recentScores.value),
     };
     localStorage.setItem("setting", JSON.stringify(data));
   });
@@ -113,17 +125,22 @@ onMounted(() => {
 <template>
   <q-card class="q-mt-md q-pa-lg" style="width: 960px">
     <q-card-section class="row fit justify-between">
-      <!-- <div class="text-h6 col-2">재생 속도</div>
-      <div class="col-3 text-h6">{{ playbackRate }}%</div> -->
-      <div class="text-h6 col-1">효과음</div>
+      <div class="text-h6 col-2">유튜브 음량</div>
       <q-slider
-        v-model="volume"
+        v-model="youtubeVolume"
         :min="0"
         :max="100"
         class="col-3"
-        @update:model-value="onVolumeChange"
+        @update:model-value="onYoutubeVolumeChange"
       />
-      <div class="col-5"></div>
+      <div class="text-h6 col-2">효과음 음량</div>
+      <q-slider
+        v-model="sfxVolume"
+        :min="0"
+        :max="100"
+        class="col-3"
+        @update:model-value="onSfxVolumeChange"
+      />
     </q-card-section>
     <q-card-section class="row fit justify-between">
       <q-input
@@ -133,9 +150,9 @@ onMounted(() => {
         class="col-2"
       />
       <q-input
-        v-model.number="noteSpeed"
+        v-model.number="noteSpeedRate"
         type="number"
-        label="노트 속도(%)"
+        label="노트 속도 배율(%)"
         class="col-2"
         :min="10"
         :max="1000"
@@ -163,6 +180,7 @@ onMounted(() => {
           v-model="loadString"
           label="불러오기"
           type="textarea"
+          @enter.prevent="load"
         />
         <q-btn
           color="white"
@@ -196,7 +214,8 @@ onMounted(() => {
     <q-card-section>
       space: 재시작 <br />
       -: 느리게, +: 빠르게 (백스페이스 옆에 있는 것)<br />
-      esc: 정지
+      esc: 정지<br />
+      오프셋, 노트 속도, 키 설정은 재시작해야 적용됩니다.
     </q-card-section>
   </q-card>
 </template>

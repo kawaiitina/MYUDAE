@@ -1,5 +1,17 @@
 import note from "./note.js";
 import longNote from "./longnote.js";
+const INPUT_MODE = {
+  LEFT_RIGHT: 0,
+  UP_DOWN: 1,
+};
+const setting = {
+  keys: {
+    top: [],
+    bottom: [],
+  },
+  inputMode: INPUT_MODE.LEFT_RIGHT,
+  userOffset: 0,
+};
 
 const KEY_TO_CODE = {
   Q: "KeyQ",

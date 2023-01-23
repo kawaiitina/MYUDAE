@@ -13,6 +13,7 @@ import staff_blue from "../assets/sprite/staff_blue.png";
 import longnote_pink from "../assets/sprite/longnote_pink.png";
 import staff_pink from "../assets/sprite/staff_pink.png";
 import combo from "./combo.js";
+import { DEFAULT_NOTE_SPEED } from "./note.js";
 
 const sprites = {
   blueStar1: Array(25)
@@ -101,14 +102,43 @@ function init(options) {
       missed: false,
     };
   });
-  noteSpeed = options.noteSpeed;
+  noteSpeed = DEFAULT_NOTE_SPEED * options.noteSpeedRate;
 }
 
+function getHeadX(longNote, elapsedTime, noteSpeed) {
+  if (
+    !longNote.isHeld &&
+    !longNote.isReleased // 다가오기 전
+  ) {
+    return JUDGEMENT_LINE_X + noteSpeed * (longNote.startTime - elapsedTime);
+  } else if (longNote.isHeld) {
+    // 누르고 있는 중
+    return JUDGEMENT_LINE_X;
+  } else if (longNote.isReleased) {
+    // 중간에 놓침
+    return (
+      JUDGEMENT_LINE_X +
+      noteSpeed *
+        (longNote.startTime -
+          elapsedTime +
+          (longNote.releaseTime - longNote.holdStartTime))
+    );
+  }
+}
+function getTailX(longNote, elapsedTime, noteSpeed) {
+  return JUDGEMENT_LINE_X + noteSpeed * (longNote.endTime - elapsedTime);
+}
 function update(elapsedTime) {
-  while (elapsedTime - longNotes.top[0]?.endTime > 1000) {
+  while (
+    longNotes.top.length > 0 &&
+    getTailX(longNotes.top[0], elapsedTime, noteSpeed) < -100
+  ) {
     longNotes.top.shift();
   }
-  while (elapsedTime - longNotes.bottom[0]?.endTime > 1000) {
+  while (
+    longNotes.bottom.length > 0 &&
+    getTailX(longNotes.bottom[0], elapsedTime, noteSpeed) < -100
+  ) {
     longNotes.bottom.shift();
   }
 
@@ -147,34 +177,6 @@ function update(elapsedTime) {
   }
 }
 function draw(elapsedTime) {
-  function getHeadX(longNote, elapsedTime, noteSpeed) {
-    if (
-      !longNote.isHeld &&
-      !longNote.isReleased // 다가오기 전
-    ) {
-      return (
-        JUDGEMENT_LINE_X + 1.5 * (longNote.startTime - elapsedTime) * noteSpeed
-      );
-    } else if (longNote.isHeld) {
-      // 누르고 있는 중
-      return JUDGEMENT_LINE_X;
-    } else if (longNote.isReleased) {
-      // 중간에 놓침
-      return (
-        JUDGEMENT_LINE_X +
-        1.5 *
-          (longNote.startTime -
-            elapsedTime +
-            (longNote.releaseTime - longNote.holdStartTime)) *
-          noteSpeed
-      );
-    }
-  }
-  function getTailX(longNote, elapsedTime, noteSpeed) {
-    return (
-      JUDGEMENT_LINE_X + 1.5 * (longNote.endTime - elapsedTime) * noteSpeed
-    );
-  }
   sprites.blueStaff.forEach((sprite) => {
     sprite.alpha = 1;
     container.removeChild(sprite);
@@ -196,9 +198,13 @@ function draw(elapsedTime) {
     sprites.blueStaff[i].x = (tailX + headX) / 2;
     sprites.blueStaff[i].scale.x = (tailX - headX) / 100;
     sprites.blueStar1[i].x = headX;
-    sprites.blueStar1[i].rotation = -elapsedTime / 200;
+    sprites.blueStar1[i].rotation = longNote.isHeld
+      ? -elapsedTime / 100
+      : -elapsedTime / 200;
     sprites.blueStar2[i].x = tailX;
-    sprites.blueStar2[i].rotation = -elapsedTime / 200;
+    sprites.blueStar2[i].rotation = longNote.isHeld
+      ? -elapsedTime / 100
+      : -elapsedTime / 200;
     if (longNote.missed) {
       sprites.blueStaff[i].alpha = 0.5;
       sprites.blueStar1[i].alpha = 0.5;
@@ -230,9 +236,13 @@ function draw(elapsedTime) {
     sprites.pinkStaff[i].x = (tailX + headX) / 2;
     sprites.pinkStaff[i].scale.x = (tailX - headX) / 100;
     sprites.pinkStar1[i].x = headX;
-    sprites.pinkStar1[i].rotation = -elapsedTime / 200;
+    sprites.pinkStar1[i].rotation = longNote.isHeld
+      ? -elapsedTime / 100
+      : -elapsedTime / 200;
     sprites.pinkStar2[i].x = tailX;
-    sprites.pinkStar2[i].rotation = -elapsedTime / 200;
+    sprites.pinkStar2[i].rotation = longNote.isHeld
+      ? -elapsedTime / 100
+      : -elapsedTime / 200;
     if (longNote.missed) {
       sprites.pinkStaff[i].alpha = 0.5;
       sprites.pinkStar1[i].alpha = 0.5;

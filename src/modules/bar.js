@@ -2,6 +2,7 @@ import * as PIXI from "pixi.js";
 import { JUDGEMENT_LINE_X } from "./judgement-line";
 import bar_red from "../assets/sprite/bar_red.png";
 import bar_gray from "../assets/sprite/bar_gray.png";
+import { DEFAULT_NOTE_SPEED } from "./note";
 
 let bars;
 let noteSpeed;
@@ -38,22 +39,14 @@ function init(options) {
         color: score.bars.includes(i) ? "red" : "gray",
       };
     });
-  noteSpeed = options.noteSpeed;
-  return Array(score.beats)
-    .fill(null)
-    .map((el, i) => {
-      return {
-        time: (60 / (score.bpm * playbackRate)) * 1000 * i + userOffset,
-        color: score.bars.includes(i) ? "red" : "gray",
-      };
-    });
+  noteSpeed = DEFAULT_NOTE_SPEED * options.noteSpeedRate;
 }
 
 function draw(elapsedTime) {
-  function getBarX(barTime, elapsedTime, noteSpeed) {
-    return JUDGEMENT_LINE_X + 1.5 * (barTime - elapsedTime) * noteSpeed;
+  function getBarX(bar, elapsedTime, noteSpeed) {
+    return JUDGEMENT_LINE_X + noteSpeed * (bar.time - elapsedTime);
   }
-  while (elapsedTime - bars[0]?.time > 1000) {
+  while (bars.length > 0 && getBarX(bars[0], elapsedTime, noteSpeed) < -10) {
     bars.shift();
   }
   sprites.red.forEach((sprite) => container.removeChild(sprite));
@@ -63,10 +56,10 @@ function draw(elapsedTime) {
       return;
     }
     if (bar.color === "red") {
-      sprites.red[i].x = getBarX(bar.time, elapsedTime, noteSpeed);
+      sprites.red[i].x = getBarX(bar, elapsedTime, noteSpeed);
       container.addChild(sprites.red[i]);
     } else if (bar.color === "gray") {
-      sprites.gray[i].x = getBarX(bar.time, elapsedTime, noteSpeed);
+      sprites.gray[i].x = getBarX(bar, elapsedTime, noteSpeed);
       container.addChild(sprites.gray[i]);
     }
   });

@@ -51,6 +51,7 @@ const notes = {
   top: [],
   bottom: [],
 };
+export const DEFAULT_NOTE_SPEED = 1.5; // pixel/ms
 let noteSpeed;
 
 const container = new PIXI.Container();
@@ -87,14 +88,23 @@ function init(options) {
       missed: false,
     };
   });
-  noteSpeed = options.noteSpeed;
+  noteSpeed = DEFAULT_NOTE_SPEED * options.noteSpeedRate;
 }
 
+function getNoteX(note, elapsedTime, noteSpeed) {
+  return JUDGEMENT_LINE_X + noteSpeed * (note.time - elapsedTime);
+}
 function update(elapsedTime) {
-  while (elapsedTime - notes.top[0]?.time > 1000) {
+  while (
+    notes.top.length > 0 &&
+    getNoteX(notes.top[0], elapsedTime, noteSpeed) < -100
+  ) {
     notes.top.shift();
   }
-  while (elapsedTime - notes.bottom[0]?.time > 1000) {
+  while (
+    notes.bottom.length > 0 &&
+    getNoteX(notes.bottom[0], elapsedTime, noteSpeed) < -100
+  ) {
     notes.bottom.shift();
   }
 
@@ -114,10 +124,6 @@ function update(elapsedTime) {
   }
 }
 function draw(elapsedTime) {
-  function getNoteX(noteTime, elapsedTime, noteSpeed) {
-    return JUDGEMENT_LINE_X + 1.5 * (noteTime - elapsedTime) * noteSpeed;
-  }
-
   sprites.blue.forEach((sprite) => {
     sprite.alpha = 1;
     container.removeChild(sprite);
@@ -131,13 +137,13 @@ function draw(elapsedTime) {
       return;
     }
     if (note.color === "blue") {
-      sprites.blue[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
+      sprites.blue[i].x = getNoteX(note, elapsedTime, noteSpeed);
       if (note.missed) {
         sprites.blue[i].alpha = 0.5;
       }
       container.addChild(sprites.blue[i]);
     } else if (note.color === "yellow") {
-      sprites.yellowTop[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
+      sprites.yellowTop[i].x = getNoteX(note, elapsedTime, noteSpeed);
       if (note.missed) {
         sprites.yellowTop[i].alpha = 0.5;
       }
@@ -158,13 +164,13 @@ function draw(elapsedTime) {
       return;
     }
     if (note.color === "pink") {
-      sprites.pink[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
+      sprites.pink[i].x = getNoteX(note, elapsedTime, noteSpeed);
       if (note.missed) {
         sprites.pink[i].alpha = 0.5;
       }
       container.addChild(sprites.pink[i]);
     } else if (note.color === "yellow") {
-      sprites.yellowBottom[i].x = getNoteX(note.time, elapsedTime, noteSpeed);
+      sprites.yellowBottom[i].x = getNoteX(note, elapsedTime, noteSpeed);
       if (note.missed) {
         sprites.yellowBottom[i].alpha = 0.5;
       }

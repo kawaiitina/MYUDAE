@@ -5,7 +5,7 @@ import { storeToRefs } from "pinia";
 import { useSettingStore } from "../store.js";
 
 const store = useSettingStore();
-const { score, playbackRate, userOffset, noteSpeed, keyTop, keyBottom } =
+const { score, playbackRate, userOffset, noteSpeedRate, keyTop, keyBottom } =
   storeToRefs(store);
 
 function onVideoPlaying(videoCurrentTime) {
@@ -14,7 +14,7 @@ function onVideoPlaying(videoCurrentTime) {
     videoCurrentTime: videoCurrentTime * 1000,
     playbackRate: playbackRate.value / 100,
     userOffset: userOffset.value,
-    noteSpeed: noteSpeed.value / 100,
+    noteSpeedRate: noteSpeedRate.value / 100,
     keyTop: keyTop.value,
     keyBottom: keyBottom.value,
   });
@@ -23,8 +23,8 @@ function onVideoPaused() {
   stop();
 }
 
-function changeVolume(volume) {
-  setting({ volume });
+function changeSfxVolume(sfxVolume) {
+  setting({ sfxVolume });
 }
 function changeScore(score) {
   setting({ score });
@@ -39,7 +39,7 @@ onMounted(() => {
 defineExpose({
   onVideoPlaying,
   onVideoPaused,
-  changeVolume,
+  changeSfxVolume,
   changeScore,
   changePlaybackRate,
 });
@@ -53,6 +53,6 @@ defineExpose({
 #pixi {
   position: absolute;
   top: 0;
-  pointer-events: none;
+  /* pointer-events: none; */
 }
 </style>

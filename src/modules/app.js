@@ -1,5 +1,4 @@
-import * as PIXI from "pixi.js";
-import pixi, { ticker } from "./pixi.js";
+import pixi from "./pixi.js";
 import bar from "./bar.js";
 import note from "./note.js";
 import longNote from "./longnote.js";
@@ -24,11 +23,28 @@ pixi.stage.addChild(
 
 // 유튜브는 한 마디(4박자) 전부터 시작함.
 // videoCurrentTime이 options.score.offset이 될 때가 startTime임
-// 첫 번째 박자에 있는 노트가 판정선에 닿을 때 elapsedTime == 0
-let startTime;
+// 첫 번째 박자에 있는 노트가 판정선에 닿을 때 elapsedTime == 0, performance.now() == startTime
 
-function init(options) {
-  startTime =
+let raf;
+function update(startTime) {
+  const elapsedTime = performance.now() - startTime;
+
+  input.update();
+  note.update(elapsedTime);
+  longNote.update(elapsedTime);
+
+  judgementLine.draw(elapsedTime);
+  bar.draw(elapsedTime);
+  note.draw(elapsedTime);
+  longNote.draw(elapsedTime);
+
+  raf = requestAnimationFrame(function () {
+    update(startTime);
+  });
+}
+
+function play(options) {
+  const startTime =
     performance.now() +
     (options.score.offset * 1000 - options.videoCurrentTime) /
       options.playbackRate;
@@ -38,39 +54,11 @@ function init(options) {
   longNote.init(options);
   bar.init(options);
   input.init(options, startTime);
-}
 
-let updateInterval = null;
-let raf;
-function update() {
-  const now = performance.now();
-  const elapsedTime = now - startTime;
-
-  input.update();
-  note.update(elapsedTime);
-  longNote.update(elapsedTime);
-}
-function draw() {
-  const now = performance.now();
-  const elapsedTime = now - startTime;
-
-  judgementLine.draw(elapsedTime);
-  bar.draw(elapsedTime);
-  note.draw(elapsedTime);
-  longNote.draw(elapsedTime);
-
-  raf = requestAnimationFrame(draw);
-}
-
-function play(options) {
-  init(options);
-
-  updateInterval = setInterval(update, 4);
-  raf = requestAnimationFrame(draw);
+  update(startTime);
 }
 function stop() {
   cancelAnimationFrame(raf);
-  clearInterval(updateInterval);
   input.stop();
   bar.stop();
   judgementLine.stop();
@@ -78,8 +66,8 @@ function stop() {
   note.stop();
 }
 function setting(option) {
-  if (option?.volume) {
-    sound.changeVolume(option.volume);
+  if (option?.sfxVolume) {
+    sound.changeSfxVolume(option.sfxVolume);
   }
   if (option?.score) {
     uiText.changeScore(option.score);

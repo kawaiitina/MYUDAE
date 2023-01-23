@@ -16,8 +16,11 @@ function handleVideoPaused() {
 function handlePlaybackRateChange(playbackRate) {
   play.value.changePlaybackRate(playbackRate);
 }
-function handleVolumeChange(volume) {
-  play.value.changeVolume(volume);
+function handleSfxVolumeChange(volume) {
+  play.value.changeSfxVolume(volume);
+}
+function handleYoutubeVolumeChange(volume) {
+  youtube.value.changeVolume(volume);
 }
 function handleScoreChange(score) {
   play.value.changeScore(score);
@@ -36,7 +39,8 @@ function handleScoreChange(score) {
         />
         <Play ref="play" />
         <Setting
-          @volume-change="handleVolumeChange"
+          @sfx-volume-change="handleSfxVolumeChange"
+          @youtube-volume-change="handleYoutubeVolumeChange"
           @score-change="handleScoreChange"
         />
       </q-page>

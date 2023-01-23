@@ -28,7 +28,7 @@ spinnerBottom.x = JUDGEMENT_LINE_X;
 spinnerBottom.y = JUDEGMENT_LINE_BOTTOM_Y;
 spinnerBottom.scale.set(0.5);
 const container = new PIXI.Container();
-container.alpha = 0.8;
+container.alpha = 0.6;
 container.addChild(spinnerTop);
 container.addChild(spinnerBottom);
 container.addChild(blue);

@@ -5,7 +5,7 @@ import { storeToRefs } from "pinia";
 import { useSettingStore } from "../store.js";
 
 const store = useSettingStore();
-const { playbackRate, score } = storeToRefs(store);
+const { playbackRate, youtubeVolume, score } = storeToRefs(store);
 
 const emit = defineEmits([
   "video-playing",
@@ -24,8 +24,8 @@ function pauseVideo() {
   youtube.value.pauseVideo();
   playing.value = false;
 }
-function setPlaybackRate() {
-  youtube.value.setPlaybackRate(playbackRate / 100);
+function changeVolume(value) {
+  youtube.value.setVolume(value);
 }
 function restart() {
   pauseVideo();
@@ -41,6 +41,11 @@ function handleClick() {
     pauseVideo();
   }
 }
+function handleReady() {
+  youtube.value.setPlaybackRate(playbackRate.value / 100);
+  youtube.value.setVolume(youtubeVolume.value);
+}
+
 function handleStateChange() {
   // -1 – 시작되지 않음
   // 0 – 종료
@@ -54,6 +59,7 @@ function handleStateChange() {
     emit("video-paused");
   }
 }
+defineExpose({ changeVolume });
 
 onMounted(() => {
   document.body.addEventListener("keydown", function (event) {
@@ -81,9 +87,7 @@ onMounted(() => {
       pauseVideo();
     }
   });
-  btn.value.$el.setAttribute("tabIndex", "-1");
 });
-defineExpose({ playVideo, pauseVideo, setPlaybackRate });
 </script>
 
 <template>
@@ -94,6 +98,7 @@ defineExpose({ playVideo, pauseVideo, setPlaybackRate });
         width="1920"
         height="1080"
         ref="youtube"
+        @ready="handleReady"
         @state-change="handleStateChange"
       />
       <q-btn
@@ -104,6 +109,7 @@ defineExpose({ playVideo, pauseVideo, setPlaybackRate });
         flat
         style="width: 1920px; height: 40px"
         @click="handleClick"
+        @focus="$event.target.blur()"
         ref="btn"
       />
     </q-card-section>
