@@ -1,7 +1,6 @@
 import * as PIXI from "pixi.js";
 import sound from "./sound.js";
 import effect from "./effect.js";
-import judgement from "./judgement.js";
 import combo from "./combo.js";
 import {
   TOP,
@@ -163,7 +162,7 @@ const longNote = {
     sound.play("longNote");
     effect.notePop(longNote.lane);
     effect.scatter(longNote.lane);
-    judgement.add(
+    effect.judgement(
       longNote.lane,
       elapsedTime - (longNote.startTime + setting.userOffset)
     );
@@ -189,7 +188,7 @@ const longNote = {
       sound.play("longNote");
       effect.notePop(longNote.lane);
       effect.scatter(longNote.lane);
-      judgement.add(longNote.lane, timeDelta);
+      effect.judgement(longNote.lane, timeDelta);
       combo.add();
       longNote.destroy();
       this.longNotes.splice(

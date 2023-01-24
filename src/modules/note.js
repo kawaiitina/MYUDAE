@@ -1,7 +1,6 @@
 import * as PIXI from "pixi.js";
 import sound from "./sound.js";
 import effect from "./effect.js";
-import judgement from "./judgement.js";
 import combo from "./combo.js";
 import {
   TOP,
@@ -96,7 +95,7 @@ const note = {
     sound.play("note");
     effect.notePop(note.lane);
     effect.scatter(note.lane);
-    judgement.add(note.lane, elapsedTime - (note.time + setting.userOffset));
+    effect.judgement(note.lane, elapsedTime - (note.time + setting.userOffset));
     combo.add();
     note.destroy();
     this.notes.splice(

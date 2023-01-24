@@ -5,7 +5,6 @@ import longNote from "./longnote.js";
 import judgementLine from "./judgement-line.js";
 import input from "./input.js";
 import effect from "./effect.js";
-import judgement from "./judgement.js";
 import uiText from "./ui-text.js";
 import combo from "./combo.js";
 import setting from "./setting.js";
@@ -14,7 +13,6 @@ pixi.stage.addChild(
   bar.container,
   judgementLine.container,
   effect.container,
-  judgement.container,
   longNote.container,
   note.container,
   combo.container,
