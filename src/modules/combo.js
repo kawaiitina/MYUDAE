@@ -1,47 +1,51 @@
 import * as PIXI from "pixi.js";
 import animate from "./animate.js";
+import { fonts } from "./pixi.js";
+
+const comboText = new PIXI.Text(
+  "0",
+  new PIXI.TextStyle({
+    align: "center",
+    fontFamily: fonts.FredokaOne.family,
+    fontSize: 100,
+    fill: 0xfee933,
+    stroke: 0xf901a4,
+    strokeThickness: 5,
+  })
+);
+comboText.anchor.set(0.5);
+
+const comboUnit = new PIXI.Text(
+  "COMBO",
+  new PIXI.TextStyle({
+    align: "center",
+    fontFamily: fonts.FredokaOne.family,
+    fontSize: 40,
+    fill: 0xfe00fe,
+    stroke: 0xffffff,
+    strokeThickness: 5,
+  })
+);
+comboUnit.anchor.set(0.5);
+comboUnit.y = 70;
 
 const container = new PIXI.Container();
-let comboText;
-let comboUnit;
-PIXI.Assets.load("FredokaOne").then((font) => {
-  const FredokaOne = font.family;
-  comboText = new PIXI.Text(
-    "0",
-    new PIXI.TextStyle({
-      align: "center",
-      fontFamily: FredokaOne,
-      fontSize: 100,
-      fill: 0xfee933,
-      stroke: 0xf901a4,
-      strokeThickness: 5,
-    })
-  );
-  comboUnit = new PIXI.Text(
-    "COMBO",
-    new PIXI.TextStyle({
-      align: "center",
-      fontFamily: FredokaOne,
-      fontSize: 40,
-      fill: 0xfe00fe,
-      stroke: 0xffffff,
-      strokeThickness: 5,
-    })
-  );
-  comboText.anchor.set(0.5);
-  comboUnit.anchor.set(0.5);
-  comboUnit.y = 70;
-  container.pivot.x = container.width / 2;
-  container.pivot.y = container.height / 2;
-  container.x = container.pivot.x + 960;
-  container.y = container.pivot.y + 150;
-  container.addChild(comboText, comboUnit);
-});
+container.pivot.x = container.width / 2;
+container.pivot.y = container.height / 2;
+container.x = container.pivot.x + 960;
+container.y = container.pivot.y + 150;
+container.addChild(comboText, comboUnit);
+animate.repeat(
+  container,
+  function (container, progress) {
+    container.y =
+      container.pivot.y + 150 + 10 * Math.sin(progress * Math.PI * 2);
+  },
+  6000
+);
+
 let currentCombo = 0;
 
-function init() {}
-
-function stop() {}
 function add() {
   currentCombo += 1;
   comboText.text = currentCombo;
@@ -55,8 +59,6 @@ function reset() {
   comboText.text = currentCombo;
   comboResetAnimation(comboText);
 }
-
-comboBuoyAnimation(container);
 
 function comboAddAnimation(container) {
   animate.once(
@@ -82,16 +84,6 @@ function comboResetAnimation(container) {
     100
   );
 }
-function comboBuoyAnimation(container) {
-  animate.repeat(
-    container,
-    function (container, progress) {
-      container.y =
-        container.pivot.y + 150 + 10 * Math.sin(progress * Math.PI * 2);
-    },
-    6000
-  );
-}
 
-const combo = { container, init, stop, add, reset };
+const combo = { container, add, reset };
 export default combo;

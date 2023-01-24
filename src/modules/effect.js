@@ -2,10 +2,12 @@ import * as PIXI from "pixi.js";
 import "@pixi/graphics-extras";
 import { hslToRgb } from "./color.js";
 import {
+  TOP,
+  BOTTOM,
   JUDGEMENT_LINE_X,
   JUDEGMENT_LINE_TOP_Y,
   JUDEGMENT_LINE_BOTTOM_Y,
-} from "./judgement-line.js";
+} from "./const.js";
 import { ticker } from "./pixi.js";
 
 const container = new PIXI.Container();
@@ -17,8 +19,8 @@ class NotePop {
     this.lifespan = 200;
 
     const x = JUDGEMENT_LINE_X;
-    const y = lane === "top" ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
-    const color = lane === "top" ? 0x4cbcfc : 0xf85bfe;
+    const y = lane === TOP ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
+    const color = lane === TOP ? 0x4cbcfc : 0xf85bfe;
     const r = 160;
 
     this.container = new PIXI.Container();
@@ -80,7 +82,7 @@ class Scatter {
     this.lifespan = 1000;
 
     const starCount = Math.floor(6 + Math.random() * 5);
-    const y = lane === "top" ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
+    const y = lane === TOP ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
 
     this.container = new PIXI.Container();
     this.stars = [];

@@ -1,77 +1,41 @@
 import note from "./note.js";
 import longNote from "./longnote.js";
-const INPUT_MODE = {
-  LEFT_RIGHT: 0,
-  UP_DOWN: 1,
-};
-const setting = {
-  keys: {
-    top: [],
-    bottom: [],
-  },
-  inputMode: INPUT_MODE.LEFT_RIGHT,
-  userOffset: 0,
-};
-
-const KEY_TO_CODE = {
-  Q: "KeyQ",
-  W: "KeyW",
-  E: "KeyE",
-  R: "KeyR",
-  T: "KeyT",
-  Y: "KeyY",
-  U: "KeyU",
-  I: "KeyI",
-  O: "KeyO",
-  P: "KeyP",
-  "[": "BracketLeft",
-  "]": "BracketRight",
-  A: "KeyA",
-  S: "KeyS",
-  D: "KeyD",
-  F: "KeyF",
-  G: "KeyG",
-  H: "KeyH",
-  J: "KeyJ",
-  K: "KeyK",
-  L: "KeyL",
-  ";": "Semicolon",
-  "'": "Quote",
-  Z: "KeyZ",
-  X: "KeyX",
-  C: "KeyC",
-  V: "KeyV",
-  B: "KeyB",
-  N: "KeyN",
-  M: "KeyM",
-  ",": "Comma",
-  ".": "Period",
-  "/": "Slash",
-};
+import setting from "./setting.js";
 
 const recentKeydowns = [];
 const recentKeyups = [];
-let keys;
 let startTime;
 
 function handleKeydown(event) {
   if (event.repeat) {
     return;
   }
-  recentKeydowns.push(event);
+  if (setting.keys.some((key) => key.code === event.code)) {
+    const pressedKey = setting.keys.find((key) => key.code === event.code);
+    recentKeydowns.push({
+      timeStamp: event.timeStamp,
+      lane: pressedKey.lane,
+      code: pressedKey.code,
+    });
+    pressedKey.pressed = true;
+  }
 }
 function handleKeyup(event) {
-  recentKeyups.push(event);
+  if (setting.keys.some((key) => key.code === event.code)) {
+    const releasedKey = setting.keys.find((key) => key.code === event.code);
+    recentKeyups.push({
+      timeStamp: event.timeStamp,
+      lane: releasedKey.lane,
+      code: releasedKey.code,
+    });
+    releasedKey.pressed = false;
+  }
 }
-function init(options, _startTime) {
+function init(_startTime) {
   document.body.addEventListener("keydown", handleKeydown);
   document.body.addEventListener("keyup", handleKeyup);
 
   startTime = _startTime;
-  keys = {
-    top: options.keyTop.map((key) => KEY_TO_CODE[key]),
-    bottom: options.keyBottom.map((key) => KEY_TO_CODE[key]),
-  };
 }
 function stop() {
   document.body.removeEventListener("keydown", handleKeydown);
@@ -82,74 +46,32 @@ function update() {
   while (recentKeydowns.length > 0) {
     const recentKeydown = recentKeydowns.shift();
     const elapsedTime = recentKeydown.timeStamp - startTime;
-    if (keys.top.includes(recentKeydown.code)) {
-      const playableNote = note.getPlayableNote("top", elapsedTime);
-      const holdableLongNote = longNote.getHoldableLongNote("top", elapsedTime);
-      if (playableNote && holdableLongNote) {
-        if (playableNote.time < holdableLongNote.startTime) {
-          note.hit("top", playableNote, elapsedTime);
-        } else {
-          longNote.hold(
-            "top",
-            holdableLongNote,
-            elapsedTime,
-            recentKeydown.code
-          );
-        }
-      } else if (playableNote) {
-        note.hit("top", playableNote, elapsedTime);
-      } else if (holdableLongNote) {
-        longNote.hold("top", holdableLongNote, elapsedTime, recentKeydown.code);
+    const playableNote = note.getPlayableNote(recentKeydown.lane, elapsedTime);
+    const holdableLongNote = longNote.getHoldableLongNote(
+      recentKeydown.lane,
+      elapsedTime
+    );
+    if (playableNote && holdableLongNote) {
+      if (playableNote.time < holdableLongNote.startTime) {
+        note.hit(playableNote, elapsedTime);
+      } else {
+        longNote.hold(holdableLongNote, elapsedTime, recentKeydown.code);
       }
-    } else if (keys.bottom.includes(recentKeydown.code)) {
-      const playableNote = note.getPlayableNote("bottom", elapsedTime);
-      const holdableLongNote = longNote.getHoldableLongNote(
-        "bottom",
-        elapsedTime
-      );
-      if (playableNote && holdableLongNote) {
-        if (playableNote.time < holdableLongNote.startTime) {
-          note.hit("bottom", playableNote, elapsedTime);
-        } else {
-          longNote.hold(
-            "bottom",
-            holdableLongNote,
-            elapsedTime,
-            recentKeydown.code
-          );
-        }
-      } else if (playableNote) {
-        note.hit("bottom", playableNote, elapsedTime);
-      } else if (holdableLongNote) {
-        longNote.hold(
-          "bottom",
-          holdableLongNote,
-          elapsedTime,
-          recentKeydown.code
-        );
-      }
+    } else if (playableNote) {
+      note.hit(playableNote, elapsedTime);
+    } else if (holdableLongNote) {
+      longNote.hold(holdableLongNote, elapsedTime, recentKeydown.code);
     }
   }
 
   while (recentKeyups.length > 0) {
     const recentKeyup = recentKeyups.shift();
     const elapsedTime = recentKeyup.timeStamp - startTime;
-    if (keys.top.includes(recentKeyup.code)) {
-      const releaseableLongNote = longNote.getReleaseableLongNote(
-        "top",
-        recentKeyup.code
-      );
-      if (releaseableLongNote) {
-        longNote.release("top", releaseableLongNote, elapsedTime);
-      }
-    } else if (keys.bottom.includes(recentKeyup.code)) {
-      const releaseableLongNote = longNote.getReleaseableLongNote(
-        "bottom",
-        recentKeyup.code
-      );
-      if (releaseableLongNote) {
-        longNote.release("bottom", releaseableLongNote, elapsedTime);
-      }
+    const releaseableLongNote = longNote.getReleaseableLongNote(
+      recentKeyup.code
+    );
+    if (releaseableLongNote) {
+      longNote.release(releaseableLongNote, elapsedTime);
     }
   }
 }

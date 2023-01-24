@@ -22,7 +22,11 @@ function changePlaybackRate(value) {
   playbackRate.text = "재생 속도: " + value.toFixed() + "%";
 }
 function changeScore(score) {
-  title.text = score.title + " - " + score.artist;
+  if (!score) {
+    title.text = "";
+  } else {
+    title.text = score.title + " - " + score.artist;
+  }
 }
 
 const uiText = {

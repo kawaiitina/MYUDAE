@@ -1,59 +1,54 @@
 import * as PIXI from "pixi.js";
 import "@pixi/graphics-extras";
+import {} from "./judgement-line.js";
+import { ticker } from "./pixi.js";
 import {
+  TOP,
   JUDGEMENT_LINE_X,
   JUDEGMENT_LINE_TOP_Y,
   JUDEGMENT_LINE_BOTTOM_Y,
-} from "./judgement-line.js";
-import { ticker } from "./pixi.js";
+  TIMING_WINDOW,
+} from "./const.js";
+import { fonts } from "./pixi.js";
 
 const container = new PIXI.Container();
 const judgements = [];
-const TIMING_WINDOW = {
-  PERFECT: 50,
-  GREAT: 130,
+const styles = {
+  perfect: new PIXI.TextStyle({
+    align: "center",
+    fontFamily: fonts.FredokaOne.family,
+    fontSize: 100,
+    fill: [0xfe3894, 0xff7dc9],
+    fillGradientStops: [0.49, 0.5],
+    stroke: 0xffffff,
+    strokeThickness: 5,
+  }),
+  great: new PIXI.TextStyle({
+    align: "center",
+    fontFamily: fonts.FredokaOne.family,
+    fontSize: 100,
+    fill: [0x953cfa, 0xbe3cfa],
+    fillGradientStops: [0.49, 0.5],
+    stroke: 0xffffff,
+    strokeThickness: 5,
+  }),
+  early: new PIXI.TextStyle({
+    align: "center",
+    fontFamily: fonts.FredokaOne.family,
+    fontSize: 30,
+    fill: 0x37cafb,
+    stroke: 0x0048ff,
+    strokeThickness: 5,
+  }),
+  late: new PIXI.TextStyle({
+    align: "center",
+    fontFamily: fonts.FredokaOne.family,
+    fontSize: 30,
+    fill: 0xff009d,
+    stroke: 0x9c1847,
+    strokeThickness: 5,
+  }),
 };
-
-let styles;
-PIXI.Assets.load("FredokaOne").then((font) => {
-  const FredokaOne = font.family;
-  styles = {
-    perfect: new PIXI.TextStyle({
-      align: "center",
-      fontFamily: FredokaOne,
-      fontSize: 100,
-      fill: [0xfe3894, 0xff7dc9],
-      fillGradientStops: [0.49, 0.5],
-      stroke: 0xffffff,
-      strokeThickness: 5,
-    }),
-    great: new PIXI.TextStyle({
-      align: "center",
-      fontFamily: FredokaOne,
-      fontSize: 100,
-      fill: [0x953cfa, 0xbe3cfa],
-      fillGradientStops: [0.49, 0.5],
-      stroke: 0xffffff,
-      strokeThickness: 5,
-    }),
-    early: new PIXI.TextStyle({
-      align: "center",
-      fontFamily: FredokaOne,
-      fontSize: 30,
-      fill: 0x37cafb,
-      stroke: 0x0048ff,
-      strokeThickness: 5,
-    }),
-    late: new PIXI.TextStyle({
-      align: "center",
-      fontFamily: FredokaOne,
-      fontSize: 30,
-      fill: 0xff009d,
-      stroke: 0x9c1847,
-      strokeThickness: 5,
-    }),
-  };
-});
 
 function getText1(timeDelta) {
   if (
@@ -85,7 +80,7 @@ class Judgement {
     this.lifespan = 800;
 
     const x = JUDGEMENT_LINE_X;
-    const y = lane === "top" ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
+    const y = lane === TOP ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
 
     this.y = y;
 

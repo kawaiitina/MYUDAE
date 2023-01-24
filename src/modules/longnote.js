@@ -1,333 +1,212 @@
 import * as PIXI from "pixi.js";
 import sound from "./sound.js";
 import effect from "./effect.js";
-import judgement, { TIMING_WINDOW } from "./judgement.js";
+import judgement from "./judgement.js";
+import combo from "./combo.js";
 import {
+  TOP,
+  BOTTOM,
   JUDGEMENT_LINE_X,
   JUDEGMENT_LINE_TOP_Y,
   JUDEGMENT_LINE_BOTTOM_Y,
-} from "./judgement-line.js";
+  DEFAULT_NOTE_SPEED,
+  TIMING_WINDOW,
+} from "./const.js";
+import { sprites } from "./pixi.js";
+import setting from "./setting.js";
 
-import longnote_blue from "../assets/sprite/longnote_blue.png";
-import staff_blue from "../assets/sprite/staff_blue.png";
-import longnote_pink from "../assets/sprite/longnote_pink.png";
-import staff_pink from "../assets/sprite/staff_pink.png";
-import combo from "./combo.js";
-import { DEFAULT_NOTE_SPEED } from "./note.js";
+class LongNote {
+  constructor(longNote, lane, score, playbackRate) {
+    this.startTime =
+      (longNote[0] / 12) * (60 / (score.bpm * playbackRate)) * 1000;
+    this.endTime =
+      (longNote[1] / 12) * (60 / (score.bpm * playbackRate)) * 1000;
+    this.lane = lane;
+    this.headSprite =
+      lane === TOP
+        ? PIXI.Sprite.from(sprites.longnoteBlue)
+        : PIXI.Sprite.from(sprites.longnotePink);
+    this.tailSprite =
+      lane === TOP
+        ? PIXI.Sprite.from(sprites.longnoteBlue)
+        : PIXI.Sprite.from(sprites.longnotePink);
+    this.staffSprite =
+      lane === TOP
+        ? PIXI.Sprite.from(sprites.staffBlue)
+        : PIXI.Sprite.from(sprites.staffPink);
+    this.holdStartTime = null;
+    this.releaseTime = null;
+    this.codes = [];
+    this.isHeld = false;
+    this.isReleased = false;
+    this.missed = false;
 
-const sprites = {
-  blueStar1: Array(25)
-    .fill(null)
-    .map(() => {
-      const sprite = PIXI.Sprite.from(longnote_blue);
-      sprite.y = JUDEGMENT_LINE_TOP_Y;
-      sprite.anchor.set(0.5);
-      return sprite;
-    }),
-  blueStar2: Array(25)
-    .fill(null)
-    .map(() => {
-      const sprite = PIXI.Sprite.from(longnote_blue);
-      sprite.y = JUDEGMENT_LINE_TOP_Y;
-      sprite.anchor.set(0.5);
-      return sprite;
-    }),
-  blueStaff: Array(25)
-    .fill(null)
-    .map(() => {
-      const sprite = PIXI.Sprite.from(staff_blue);
-      sprite.y = JUDEGMENT_LINE_TOP_Y;
-      sprite.anchor.set(0.5);
-      return sprite;
-    }),
-  pinkStar1: Array(25)
-    .fill(null)
-    .map(() => {
-      const sprite = PIXI.Sprite.from(longnote_pink);
-      sprite.y = JUDEGMENT_LINE_BOTTOM_Y;
-      sprite.anchor.set(0.5);
-      return sprite;
-    }),
-  pinkStar2: Array(25)
-    .fill(null)
-    .map(() => {
-      const sprite = PIXI.Sprite.from(longnote_pink);
-      sprite.y = JUDEGMENT_LINE_BOTTOM_Y;
-      sprite.anchor.set(0.5);
-      return sprite;
-    }),
-  pinkStaff: Array(25)
-    .fill(null)
-    .map(() => {
-      const sprite = PIXI.Sprite.from(staff_pink);
-      sprite.y = JUDEGMENT_LINE_BOTTOM_Y;
-      sprite.anchor.set(0.5);
-      return sprite;
-    }),
-};
-const container = new PIXI.Container();
-
-const longNotes = {
-  top: [],
-  bottom: [],
-};
-let noteSpeed;
-
-function init(options) {
-  const { score, playbackRate, userOffset } = options;
-  function noteToTime(note) {
-    return (note / 12) * (60 / (score.bpm * playbackRate)) * 1000 + userOffset;
+    this.headSprite.y =
+      lane === TOP ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
+    this.tailSprite.y =
+      lane === TOP ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
+    this.staffSprite.y =
+      lane === TOP ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
+    this.headSprite.anchor.set(0.5);
+    this.tailSprite.anchor.set(0.5);
+    this.staffSprite.anchor.set(0.5);
   }
-  longNotes.top = score.longNotes.top.map((longNote) => {
-    return {
-      startTime: noteToTime(longNote[0]),
-      endTime: noteToTime(longNote[1]),
-      holdStartTime: null,
-      releaseTime: null,
-      code: null,
-      isHeld: false,
-      isReleased: false,
-      missed: false,
-    };
-  });
-  longNotes.bottom = score.longNotes.bottom.map((longNote) => {
-    return {
-      startTime: noteToTime(longNote[0]),
-      endTime: noteToTime(longNote[1]),
-      holdStartTime: null,
-      releaseTime: null,
-      code: null,
-      isHeld: false,
-      isReleased: false,
-      missed: false,
-    };
-  });
-  noteSpeed = DEFAULT_NOTE_SPEED * options.noteSpeedRate;
-}
-
-function getHeadX(longNote, elapsedTime, noteSpeed) {
-  if (
-    !longNote.isHeld &&
-    !longNote.isReleased // 다가오기 전
-  ) {
-    return JUDGEMENT_LINE_X + noteSpeed * (longNote.startTime - elapsedTime);
-  } else if (longNote.isHeld) {
-    // 누르고 있는 중
-    return JUDGEMENT_LINE_X;
-  } else if (longNote.isReleased) {
-    // 중간에 놓침
-    return (
-      JUDGEMENT_LINE_X +
-      noteSpeed *
-        (longNote.startTime -
-          elapsedTime +
-          (longNote.releaseTime - longNote.holdStartTime))
-    );
-  }
-}
-function getTailX(longNote, elapsedTime, noteSpeed) {
-  return JUDGEMENT_LINE_X + noteSpeed * (longNote.endTime - elapsedTime);
-}
-function update(elapsedTime) {
-  while (
-    longNotes.top.length > 0 &&
-    getTailX(longNotes.top[0], elapsedTime, noteSpeed) < -100
-  ) {
-    longNotes.top.shift();
-  }
-  while (
-    longNotes.bottom.length > 0 &&
-    getTailX(longNotes.bottom[0], elapsedTime, noteSpeed) < -100
-  ) {
-    longNotes.bottom.shift();
-  }
-
-  const missedTopNote = longNotes.top.find(
-    (longNote) =>
-      !longNote.missed &&
-      !longNote.isHeld &&
-      longNote.startTime + TIMING_WINDOW.GREAT < elapsedTime
-  );
-  if (missedTopNote) {
-    missedTopNote.missed = true;
-    combo.reset();
-  }
-  const missedBottomNote = longNotes.bottom.find(
-    (longNote) =>
-      !longNote.missed &&
-      !longNote.isHeld &&
-      longNote.startTime + TIMING_WINDOW.GREAT < elapsedTime
-  );
-  if (missedBottomNote) {
-    missedBottomNote.missed = true;
-    combo.reset();
-  }
-
-  const releaseableLongNoteTop = longNotes.top.find(
-    (longNote) => longNote.isHeld && elapsedTime >= longNote.endTime - 4
-  );
-  if (releaseableLongNoteTop) {
-    release("top", releaseableLongNoteTop, elapsedTime);
-  }
-  const releaseableLongNoteBottom = longNotes.bottom.find(
-    (longNote) => longNote.isHeld && elapsedTime >= longNote.endTime - 4
-  );
-  if (releaseableLongNoteBottom) {
-    release("bottom", releaseableLongNoteBottom, elapsedTime);
-  }
-}
-function draw(elapsedTime) {
-  sprites.blueStaff.forEach((sprite) => {
-    sprite.alpha = 1;
-    container.removeChild(sprite);
-  });
-  sprites.blueStar1.forEach((sprite) => {
-    sprite.alpha = 1;
-    container.removeChild(sprite);
-  });
-  sprites.blueStar2.forEach((sprite) => {
-    sprite.alpha = 1;
-    container.removeChild(sprite);
-  });
-  longNotes.top.forEach((longNote, i) => {
-    if (i >= 25) {
-      return;
+  update(elapsedTime) {
+    if (
+      !this.isHeld &&
+      !this.isReleased // 다가오기 전
+    ) {
+      this.headSprite.x =
+        JUDGEMENT_LINE_X -
+        DEFAULT_NOTE_SPEED *
+          setting.noteSpeedRate *
+          (elapsedTime - (this.startTime + setting.userOffset));
+    } else if (this.isHeld) {
+      // 누르고 있는 중
+      this.headSprite.x = JUDGEMENT_LINE_X;
+    } else if (this.isReleased) {
+      // 중간에 놓침
+      this.headSprite.x =
+        JUDGEMENT_LINE_X -
+        DEFAULT_NOTE_SPEED *
+          setting.noteSpeedRate *
+          (elapsedTime -
+            (this.startTime + setting.userOffset) -
+            (this.releaseTime - this.holdStartTime));
     }
-    const headX = getHeadX(longNote, elapsedTime, noteSpeed);
-    const tailX = getTailX(longNote, elapsedTime, noteSpeed);
-    sprites.blueStaff[i].x = (tailX + headX) / 2;
-    sprites.blueStaff[i].scale.x = (tailX - headX) / 100;
-    sprites.blueStar1[i].x = headX;
-    sprites.blueStar1[i].rotation = longNote.isHeld
+    this.headSprite.rotation = this.isHeld
       ? -elapsedTime / 100
       : -elapsedTime / 200;
-    sprites.blueStar2[i].x = tailX;
-    sprites.blueStar2[i].rotation = longNote.isHeld
-      ? -elapsedTime / 100
-      : -elapsedTime / 200;
-    if (longNote.missed) {
-      sprites.blueStaff[i].alpha = 0.5;
-      sprites.blueStar1[i].alpha = 0.5;
-      sprites.blueStar2[i].alpha = 0.5;
+
+    this.tailSprite.x =
+      JUDGEMENT_LINE_X -
+      DEFAULT_NOTE_SPEED *
+        setting.noteSpeedRate *
+        (elapsedTime - (this.endTime + setting.userOffset));
+    this.tailSprite.rotation = -elapsedTime / 200;
+
+    this.staffSprite.x = (this.tailSprite.x + this.headSprite.x) / 2;
+    this.staffSprite.scale.x = (this.tailSprite.x - this.headSprite.x) / 100;
+
+    if (
+      !this.missed &&
+      !this.isHeld &&
+      elapsedTime > this.startTime + setting.userOffset + TIMING_WINDOW.GREAT
+    ) {
+      this.missed = true;
+      this.headSprite.alpha = 0.5;
+      this.tailSprite.alpha = 0.5;
+      this.staffSprite.alpha = 0.5;
+      combo.reset();
     }
-
-    container.addChild(sprites.blueStaff[i]);
-    container.addChild(sprites.blueStar1[i]);
-    container.addChild(sprites.blueStar2[i]);
-  });
-  sprites.pinkStaff.forEach((sprite) => {
-    sprite.alpha = 1;
-    container.removeChild(sprite);
-  });
-  sprites.pinkStar1.forEach((sprite) => {
-    sprite.alpha = 1;
-    container.removeChild(sprite);
-  });
-  sprites.pinkStar2.forEach((sprite) => {
-    sprite.alpha = 1;
-    container.removeChild(sprite);
-  });
-  longNotes.bottom.forEach((longNote, i) => {
-    if (i >= 25) {
-      return;
-    }
-    const headX = getHeadX(longNote, elapsedTime, noteSpeed);
-    const tailX = getTailX(longNote, elapsedTime, noteSpeed);
-    sprites.pinkStaff[i].x = (tailX + headX) / 2;
-    sprites.pinkStaff[i].scale.x = (tailX - headX) / 100;
-    sprites.pinkStar1[i].x = headX;
-    sprites.pinkStar1[i].rotation = longNote.isHeld
-      ? -elapsedTime / 100
-      : -elapsedTime / 200;
-    sprites.pinkStar2[i].x = tailX;
-    sprites.pinkStar2[i].rotation = longNote.isHeld
-      ? -elapsedTime / 100
-      : -elapsedTime / 200;
-    if (longNote.missed) {
-      sprites.pinkStaff[i].alpha = 0.5;
-      sprites.pinkStar1[i].alpha = 0.5;
-      sprites.pinkStar2[i].alpha = 0.5;
-    }
-
-    container.addChild(sprites.pinkStaff[i]);
-    container.addChild(sprites.pinkStar1[i]);
-    container.addChild(sprites.pinkStar2[i]);
-  });
-}
-function stop() {
-  sprites.blueStaff.forEach((sprite) => container.removeChild(sprite));
-  sprites.blueStar1.forEach((sprite) => container.removeChild(sprite));
-  sprites.blueStar2.forEach((sprite) => container.removeChild(sprite));
-  sprites.pinkStaff.forEach((sprite) => container.removeChild(sprite));
-  sprites.pinkStar1.forEach((sprite) => container.removeChild(sprite));
-  sprites.pinkStar2.forEach((sprite) => container.removeChild(sprite));
-
-  longNotes.top = [];
-  longNotes.bottom = [];
-}
-
-function getHoldableLongNote(lane, elapsedTime) {
-  return longNotes[lane].find((longNote) => {
-    const timeDelta = longNote.startTime - elapsedTime;
-    return (
-      !longNote.isHeld &&
-      !longNote.isReleased &&
-      -TIMING_WINDOW.GREAT <= timeDelta &&
-      timeDelta <= TIMING_WINDOW.GREAT
-    );
-  });
-}
-
-function hold(lane, holdableLongNote, elapsedTime, code) {
-  const timeDelta = elapsedTime - holdableLongNote.startTime;
-  sound.play("longNote");
-  effect.notePop(lane);
-  effect.scatter(lane);
-  judgement.add(lane, timeDelta);
-  combo.add();
-  holdableLongNote.isHeld = true;
-  holdableLongNote.holdStartTime = elapsedTime;
-  holdableLongNote.code = code;
-}
-
-function getReleaseableLongNote(lane, code) {
-  return longNotes[lane].find(
-    (longNote) => longNote.isHeld && longNote.code === code
-  );
-}
-
-function release(lane, releaseableLongNote, elapsedTime) {
-  const index = longNotes[lane].findIndex(
-    (longNote) => longNote === releaseableLongNote
-  );
-  const timeDelta = elapsedTime - releaseableLongNote.endTime;
-  if (timeDelta < -TIMING_WINDOW.GREAT) {
-    //롱노트 놓침
-    releaseableLongNote.isHeld = false;
-    releaseableLongNote.isReleased = true;
-    releaseableLongNote.releaseTime = elapsedTime;
-    combo.reset();
-  } else if (timeDelta < TIMING_WINDOW.GREAT) {
-    sound.play("longNote");
-    effect.notePop(lane);
-    effect.scatter(lane);
-    judgement.add(lane, timeDelta);
-    combo.add();
-    longNotes[lane].splice(index, 1);
-  } else {
-    longNotes[lane].splice(index, 1);
+  }
+  destroy() {
+    this.headSprite.destroy();
+    this.tailSprite.destroy();
+    this.staffSprite.destroy();
   }
 }
 
 const longNote = {
-  container,
-  init,
-  update,
-  draw,
-  stop,
-  getHoldableLongNote,
-  hold,
-  getReleaseableLongNote,
-  release,
+  container: new PIXI.Container(),
+  longNotes: [],
+  init(score, playbackRate) {
+    score.longNotes.top.forEach((longNote) =>
+      this.longNotes.push(new LongNote(longNote, TOP, score, playbackRate))
+    );
+    score.longNotes.bottom.forEach((longNote) =>
+      this.longNotes.push(new LongNote(longNote, BOTTOM, score, playbackRate))
+    );
+    this.longNotes.forEach((longNote) => {
+      this.container.addChild(longNote.staffSprite);
+      this.container.addChild(longNote.headSprite);
+      this.container.addChild(longNote.tailSprite);
+    });
+  },
+  update(elapsedTime) {
+    this.longNotes.forEach((longNote) => longNote.update(elapsedTime));
+    while (true) {
+      const index = this.longNotes.findIndex(
+        (longNote) => longNote.tailSprite.x < -100
+      );
+      if (index === -1) {
+        break;
+      }
+      this.longNotes[index].destroy();
+      this.longNotes.splice(index, 1);
+    }
+    while (true) {
+      const releaseableLongNote = this.longNotes.find(
+        (longNote) =>
+          longNote.isHeld &&
+          elapsedTime >= longNote.endTime + setting.userOffset - 4
+      );
+      if (!releaseableLongNote) {
+        break;
+      }
+      this.release(releaseableLongNote, elapsedTime);
+    }
+  },
+  getHoldableLongNote(lane, elapsedTime) {
+    return this.longNotes.find((longNote) => {
+      const timeDelta = elapsedTime - (longNote.startTime + setting.userOffset);
+      return (
+        lane === longNote.lane &&
+        !longNote.isHeld &&
+        !longNote.isReleased &&
+        -TIMING_WINDOW.GREAT <= timeDelta &&
+        timeDelta <= TIMING_WINDOW.GREAT
+      );
+    });
+  },
+  hold(longNote, elapsedTime, code) {
+    sound.play("longNote");
+    effect.notePop(longNote.lane);
+    effect.scatter(longNote.lane);
+    judgement.add(
+      longNote.lane,
+      elapsedTime - (longNote.startTime + setting.userOffset)
+    );
+    combo.add();
+    longNote.isHeld = true;
+    longNote.holdStartTime = elapsedTime;
+    longNote.codes.push(code);
+  },
+  getReleaseableLongNote(code) {
+    return this.longNotes.find(
+      (longNote) => longNote.isHeld && longNote.codes.includes(code)
+    );
+  },
+  release(longNote, elapsedTime) {
+    const timeDelta = elapsedTime - (longNote.endTime + setting.userOffset);
+    if (timeDelta < -TIMING_WINDOW.GREAT) {
+      //롱노트 놓침
+      longNote.isHeld = false;
+      longNote.isReleased = true;
+      longNote.releaseTime = elapsedTime;
+      combo.reset();
+    } else {
+      sound.play("longNote");
+      effect.notePop(longNote.lane);
+      effect.scatter(longNote.lane);
+      judgement.add(longNote.lane, timeDelta);
+      combo.add();
+      longNote.destroy();
+      this.longNotes.splice(
+        this.longNotes.findIndex((thisLongNote) => thisLongNote === longNote),
+        1
+      );
+    }
+  },
+  stop() {
+    this.longNotes.forEach((longNote) => {
+      this.container.removeChild(longNote.headSprite);
+      this.container.removeChild(longNote.tailSprite);
+      this.container.removeChild(longNote.staffSprite);
+    });
+    this.longNotes.forEach((longNote) => longNote.destroy());
+    this.longNotes = [];
+  },
 };
+
 export default longNote;

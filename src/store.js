@@ -1,29 +1,29 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 
-export const useSettingStore = defineStore("setting", () => {
-  const loadString = ref("");
-  const score = ref({});
-  const recentScores = ref([]);
-
+export const useStore = defineStore("store", () => {
+  const loadedScores = ref([]);
+  const currentScoreIndex = ref(0);
   const playbackRate = ref(100);
   const sfxVolume = ref(50);
-  const youtubeVolume = ref(100);
+  const keyTop = ref(["A", "S", "D", "F"]);
+  const keyBottom = ref(["J", "K", "L", ";"]);
   const userOffset = ref(0);
   const noteSpeedRate = ref(100);
-  const keyTop = ref(["D", "F"]);
-  const keyBottom = ref(["J", "K"]);
+  const score = computed(() => loadedScores.value[currentScoreIndex.value]);
+
+  const youtubeVolume = ref(100);
 
   return {
-    loadString,
-    score,
-    recentScores,
+    loadedScores,
+    currentScoreIndex,
     playbackRate,
     sfxVolume,
-    youtubeVolume,
-    userOffset,
-    noteSpeedRate,
     keyTop,
     keyBottom,
+    userOffset,
+    noteSpeedRate,
+    score,
+    youtubeVolume,
   };
 });

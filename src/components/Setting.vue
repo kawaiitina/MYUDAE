@@ -1,33 +1,24 @@
 <script setup>
-import { onMounted } from "vue";
+import { ref } from "vue";
 import { storeToRefs } from "pinia";
-import { useSettingStore } from "../store.js";
+import { useStore } from "../store.js";
+import app from "../modules/app.js";
 
-const store = useSettingStore();
+const store = useStore();
 const {
-  loadString,
-  score,
-  recentScores,
-  playbackRate,
+  loadedScores,
+  currentScoreIndex,
   sfxVolume,
   youtubeVolume,
-  userOffset,
-  noteSpeedRate,
   keyTop,
   keyBottom,
+  userOffset,
+  noteSpeedRate,
+  score,
 } = storeToRefs(store);
+const loadString = ref("");
 
-const emit = defineEmits([
-  "sfx-volume-change",
-  "youtube-volume-change",
-  "score-change",
-]);
-function onSfxVolumeChange() {
-  emit("sfx-volume-change", sfxVolume.value);
-}
-function onYoutubeVolumeChange() {
-  emit("youtube-volume-change", youtubeVolume.value);
-}
+const emit = defineEmits(["youtube-volume-change"]);
 
 const keys = [
   "Q",
@@ -65,61 +56,28 @@ const keys = [
   "/",
 ];
 
-function load() {
-  score.value = JSON.parse(loadString.value);
-  recentScores.value.push(score.value);
-  recentScores.value.sort((score1, score2) =>
+function loadScore() {
+  loadedScores.value.push(JSON.parse(loadString.value));
+  loadedScores.value.sort((score1, score2) =>
     score1.title.localeCompare(score2.title)
   );
-  localStorage.setItem("loadString", loadString.value);
-  localStorage.setItem("recentScores", JSON.stringify(recentScores.value));
   loadString.value = "";
-  emit("score-change", score.value);
 }
 
-function loadRecentScore(recentScore) {
-  score.value = recentScore;
-  localStorage.setItem("loadString", JSON.stringify(recentScore));
-  emit("score-change", score.value);
-}
-function deleteRecentScores(i) {
-  recentScores.value.splice(i, 1);
-}
-
-onMounted(() => {
-  const settingString = localStorage.getItem("setting");
-  if (settingString) {
-    const data = JSON.parse(settingString);
-    playbackRate.value = data.playbackRate;
-    sfxVolume.value = data.sfxVolume;
-    youtubeVolume.value = data.youtubeVolume;
-    userOffset.value = data.userOffset;
-    noteSpeedRate.value = data.noteSpeedRate;
-    keyTop.value = data.keyTop;
-    keyBottom.value = data.keyBottom;
-    recentScores.value = JSON.parse(data.recentScores);
-
-    emit("sfx-volume-change", sfxVolume.value);
+function deleteScore(selectedScoreIndex) {
+  loadedScores.value.splice(selectedScoreIndex, 1);
+  if (selectedScoreIndex === currentScoreIndex.value) {
+    currentScoreIndex.value = 0;
+    app.setting.changeScore(score.value);
+  } else if (selectedScoreIndex < currentScoreIndex.value) {
+    currentScoreIndex.value -= 1;
   }
-  const loadString = localStorage.getItem("loadString");
-  if (loadString) {
-    score.value = JSON.parse(loadString);
-    emit("score-change", score.value);
-  }
-  addEventListener("beforeunload", function save() {
-    const data = {
-      playbackRate: playbackRate.value,
-      sfxVolume: sfxVolume.value,
-      youtubeVolume: youtubeVolume.value,
-      userOffset: userOffset.value,
-      noteSpeedRate: noteSpeedRate.value,
-      keyTop: keyTop.value,
-      keyBottom: keyBottom.value,
-      recentScores: JSON.stringify(recentScores.value),
-    };
-    localStorage.setItem("setting", JSON.stringify(data));
-  });
-});
+}
+
+function selectScore(selectedScoreIndex) {
+  currentScoreIndex.value = selectedScoreIndex;
+  app.setting.changeScore(score.value);
+}
 </script>
 
 <template>
@@ -131,7 +89,7 @@ onMounted(() => {
         :min="0"
         :max="100"
         class="col-3"
-        @update:model-value="onYoutubeVolumeChange"
+        @update:model-value="emit('youtube-volume-change', youtubeVolume)"
       />
       <div class="text-h6 col-2">효과음 음량</div>
       <q-slider
@@ -139,15 +97,32 @@ onMounted(() => {
         :min="0"
         :max="100"
         class="col-3"
-        @update:model-value="onSfxVolumeChange"
+        @update:model-value="app.setting.changeSfxVolume(sfxVolume)"
       />
     </q-card-section>
     <q-card-section class="row fit justify-between">
+      <q-select
+        v-model="keyTop"
+        label="키 설정(위)"
+        multiple
+        :options="keys"
+        class="col-3"
+        @update:model-value="app.setting.changeKey(keyTop, keyBottom)"
+      />
+      <q-select
+        v-model="keyBottom"
+        label="키 설정(아래)"
+        multiple
+        :options="keys"
+        class="col-3"
+        @update:model-value="app.setting.changeKey(keyTop, keyBottom)"
+      />
       <q-input
         v-model.number="userOffset"
         type="number"
         label="오프셋(ms)"
         class="col-2"
+        @update:model-value="app.setting.changeUserOffset(userOffset)"
       />
       <q-input
         v-model.number="noteSpeedRate"
@@ -156,56 +131,43 @@ onMounted(() => {
         class="col-2"
         :min="10"
         :max="1000"
-      />
-      <q-select
-        v-model="keyTop"
-        label="키 설정(위)"
-        multiple
-        :options="keys"
-        class="col-3"
-      />
-      <q-select
-        v-model="keyBottom"
-        label="키 설정(아래)"
-        multiple
-        :options="keys"
-        class="col-3"
+        @update:model-value="
+          app.setting.changeNoteSpeedRate(noteSpeedRate / 100)
+        "
       />
     </q-card-section>
     <q-separator />
     <q-card-section>
-      <div class="column">
+      <div class="row justify-between">
         <q-input
           outlined
           v-model="loadString"
           label="불러오기"
-          type="textarea"
-          @enter.prevent="load"
+          placeholder="여기에 붙여넣고 엔터키를 누르거나 오른쪽 버튼을 누르세요."
+          @keydown.enter.prevent="loadScore"
+          class="col-9"
         />
         <q-btn
           color="white"
           text-color="black"
           label="불러오기"
-          @click="load"
+          @click="loadScore"
+          class="col-2"
         />
       </div>
-      <q-list v-if="recentScores.length > 0" bordered separator class="q-mt-md">
+      <q-list v-if="loadedScores.length > 0" bordered separator class="q-mt-md">
         <q-item
-          v-for="(recentScore, i) in recentScores"
+          v-for="(loadedScore, i) in loadedScores"
           clickable
           v-ripple
-          @click="loadRecentScore(recentScore)"
+          @click="selectScore(i)"
+          :class="currentScoreIndex === i ? 'text-bold' : ''"
         >
           <q-item-section>
-            {{ recentScore.title }} - {{ recentScore.artist }}
+            {{ loadedScore.title }} - {{ loadedScore.artist }}
           </q-item-section>
           <q-item-section side>
-            <q-btn
-              round
-              flat
-              icon="close"
-              @click.stop="deleteRecentScores(i)"
-            />
+            <q-btn round flat icon="close" @click.stop="deleteScore(i)" />
           </q-item-section>
         </q-item>
       </q-list>
@@ -214,8 +176,7 @@ onMounted(() => {
     <q-card-section>
       space: 재시작 <br />
       -: 느리게, +: 빠르게 (백스페이스 옆에 있는 것)<br />
-      esc: 정지<br />
-      오프셋, 노트 속도, 키 설정은 재시작해야 적용됩니다.
+      esc: 정지
     </q-card-section>
   </q-card>
 </template>

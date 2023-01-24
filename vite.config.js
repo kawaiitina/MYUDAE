@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [vue()],
   build: {
     outDir: "docs",
+    target: "esnext",
   },
   base: "./",
 });

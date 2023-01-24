@@ -1,58 +1,34 @@
 <script setup>
 import { onMounted } from "vue";
-import { pixi, play, stop, setting } from "../modules/app.js";
+import app from "../modules/app.js";
 import { storeToRefs } from "pinia";
-import { useSettingStore } from "../store.js";
+import { useStore } from "../store.js";
 
-const store = useSettingStore();
-const { score, playbackRate, userOffset, noteSpeedRate, keyTop, keyBottom } =
-  storeToRefs(store);
+const store = useStore();
+const { score, playbackRate } = storeToRefs(store);
 
-function onVideoPlaying(videoCurrentTime) {
-  play({
-    score: score.value,
-    videoCurrentTime: videoCurrentTime * 1000,
-    playbackRate: playbackRate.value / 100,
-    userOffset: userOffset.value,
-    noteSpeedRate: noteSpeedRate.value / 100,
-    keyTop: keyTop.value,
-    keyBottom: keyBottom.value,
-  });
+function play(videoCurrentTime) {
+  app.play(score.value, playbackRate.value / 100, videoCurrentTime * 1000);
 }
-function onVideoPaused() {
-  stop();
-}
-
-function changeSfxVolume(sfxVolume) {
-  setting({ sfxVolume });
-}
-function changeScore(score) {
-  setting({ score });
-}
-function changePlaybackRate(playbackRate) {
-  setting({ playbackRate });
+function stop() {
+  app.stop();
 }
 
 onMounted(() => {
-  document.getElementById("pixi").appendChild(pixi.view);
+  document.getElementById("pixi").appendChild(app.pixi.view);
 });
-defineExpose({
-  onVideoPlaying,
-  onVideoPaused,
-  changeSfxVolume,
-  changeScore,
-  changePlaybackRate,
-});
+defineExpose({ play, stop });
 </script>
 
 <template>
-  <div id="pixi" style="height: 1080px"></div>
+  <div id="pixi"></div>
 </template>
 
 <style scoped>
 #pixi {
   position: absolute;
   top: 0;
-  /* pointer-events: none; */
+  width: 1920px;
+  height: 1080px;
 }
 </style>
