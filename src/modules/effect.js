@@ -94,12 +94,14 @@ class Scatter {
 
       const outerRadius = 30 + Math.random() * 10;
       const innerRadius = outerRadius * 0.6;
-      const vx = -0.5 + Math.random() * 2;
-      const vy = -1.5 * Math.random();
-      const omega = 0.03 * (Math.random() - 0.5);
+      const vx = -500 + Math.random() * 2000;
+      const vy = -1500 * Math.random();
+      const omega = 30 * (Math.random() - 0.5);
 
       graphics.pivot.x = x;
       graphics.pivot.y = y;
+      graphics.x = x;
+      graphics.y = y;
       graphics.lineStyle(0);
       graphics.beginFill(
         hslToRgb(
@@ -110,8 +112,6 @@ class Scatter {
       );
       graphics.drawStar(x, y, 5, outerRadius, innerRadius);
       graphics.endFill();
-      graphics.x = graphics.pivot.x + x;
-      graphics.y = graphics.pivot.y + y;
       this.container.addChild(graphics);
       this.stars.push({
         graphics,
@@ -130,16 +130,14 @@ class Scatter {
       return;
     }
 
-    const g = 0.003;
+    const g = 3000;
 
     this.stars.forEach((star) => {
-      const x = star.vx * (progress * this.lifespan);
-      const y =
-        star.vy * (progress * this.lifespan) +
-        (g * (progress * this.lifespan) ** 2) / 2;
+      const x = star.vx * progress;
+      const y = star.vy * progress + (g * progress ** 2) / 2;
       star.graphics.x = star.graphics.pivot.x + x;
       star.graphics.y = star.graphics.pivot.y + y;
-      star.graphics.rotation = star.omega * (progress * this.lifespan);
+      star.graphics.rotation = star.omega * progress;
       star.graphics.scale.set(1 - progress, 1 - progress);
     });
   };
