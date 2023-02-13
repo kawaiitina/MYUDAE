@@ -83,6 +83,7 @@ class Scatter {
     this.lifespan = 1000;
 
     const starCount = Math.floor(6 + Math.random() * 5);
+    const x = JUDGEMENT_LINE_X;
     const y = lane === TOP ? JUDEGMENT_LINE_TOP_Y : JUDEGMENT_LINE_BOTTOM_Y;
 
     this.container = new PIXI.Container();
@@ -93,7 +94,6 @@ class Scatter {
 
       const outerRadius = 30 + Math.random() * 10;
       const innerRadius = outerRadius * 0.6;
-      const x = JUDGEMENT_LINE_X;
       const vx = -0.5 + Math.random() * 2;
       const vy = -1.5 * Math.random();
       const omega = 0.03 * (Math.random() - 0.5);
@@ -110,6 +110,8 @@ class Scatter {
       );
       graphics.drawStar(x, y, 5, outerRadius, innerRadius);
       graphics.endFill();
+      graphics.x = graphics.pivot.x + x;
+      graphics.y = graphics.pivot.y + y;
       this.container.addChild(graphics);
       this.stars.push({
         graphics,
