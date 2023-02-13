@@ -5,6 +5,8 @@ export const TIMING_WINDOW = {
   PERFECT: 50,
   GREAT: 130,
 };
+export const APP_WIDTH = 1920;
+export const APP_HEIGHT = 1080;
 export const JUDGEMENT_LINE_X = 400;
 export const JUDEGMENT_LINE_TOP_Y = 380;
 export const JUDEGMENT_LINE_BOTTOM_Y = 680;

@@ -1,4 +1,5 @@
 import * as PIXI from "pixi.js";
+import { APP_WIDTH, APP_HEIGHT } from "./const.js";
 import FredokaOne_Regular from "../assets/font/FredokaOne-Regular.ttf";
 import longnote_blue from "../assets/sprite/longnote_blue.png";
 import staff_blue from "../assets/sprite/staff_blue.png";
@@ -14,8 +15,8 @@ import judgement_line_pink from "../assets/sprite/judgement_line_pink.png";
 import spinner from "../assets/sprite/spinner.png";
 
 const pixi = new PIXI.Application({
-  width: 1920,
-  height: 1080,
+  width: APP_WIDTH,
+  height: APP_HEIGHT,
   background: 0x181818,
   backgroundAlpha: 0.9,
 });
@@ -51,7 +52,7 @@ const sprites = {
   spinner: await PIXI.Assets.load("spinner"),
 };
 
-const ticker = new PIXI.Ticker();
+const ticker = PIXI.Ticker.shared;
 ticker.start();
 
 export default pixi;

@@ -25,15 +25,16 @@ pixi.stage.addChild(
 
 let raf;
 
-function play(score, playbackRate, videoCurrentTime) {
+function play(videoCurrentTime) {
   const startTime =
     performance.now() +
-    (score.videoStartTime * 1000 - videoCurrentTime) / playbackRate;
+    (setting.score.videoStartTime * 1000 - videoCurrentTime) /
+      setting.playbackRate;
 
-  judgementLine.init(score, playbackRate);
-  note.init(score, playbackRate);
-  longNote.init(score, playbackRate);
-  bar.init(score, playbackRate);
+  judgementLine.init();
+  note.init();
+  longNote.init();
+  bar.init();
   input.init(startTime);
 
   update(startTime);
@@ -54,10 +55,9 @@ function update(startTime) {
 function stop() {
   cancelAnimationFrame(raf);
   input.stop();
-  bar.stop();
-  judgementLine.stop();
-  longNote.stop();
   note.stop();
+  longNote.stop();
+  bar.stop();
 }
 const app = { pixi, play, stop, setting };
 export default app;

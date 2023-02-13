@@ -109,7 +109,8 @@ class LongNote {
 const longNote = {
   container: new PIXI.Container(),
   longNotes: [],
-  init(score, playbackRate) {
+  init() {
+    const { score, playbackRate } = setting;
     score.longNotes.top.forEach((longNote) =>
       this.longNotes.push(new LongNote(longNote, TOP, score, playbackRate))
     );

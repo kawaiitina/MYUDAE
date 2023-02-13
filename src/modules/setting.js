@@ -43,6 +43,8 @@ const INPUT_MODE = {
 };
 
 const setting = {
+  score: null,
+  playbackRate: 1,
   keys: [
     {
       code: "KeyA",
@@ -84,9 +86,11 @@ const setting = {
     sound.changeSfxVolume(sfxVolume);
   },
   changeScore(score) {
+    this.score = score;
     uiText.changeScore(score);
   },
   changePlaybackRate(playbackRate) {
+    this.playbackRate = playbackRate / 100;
     uiText.changePlaybackRate(playbackRate);
   },
   changeUserOffset(value) {
@@ -96,15 +100,15 @@ const setting = {
     this.noteSpeedRate = value;
   },
   changeKey(keyTop, keyBottom) {
-    const top = keyTop.map((key) => {
+    const top = keyTop.map((code) => {
       return {
-        code: KEY_TO_CODE[key],
+        code,
         lane: TOP,
       };
     });
-    const bottom = keyBottom.map((key) => {
+    const bottom = keyBottom.map((code) => {
       return {
-        code: KEY_TO_CODE[key],
+        code,
         lane: BOTTOM,
       };
     });

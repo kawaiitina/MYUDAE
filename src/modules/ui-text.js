@@ -1,20 +1,21 @@
 import * as PIXI from "pixi.js";
+import { APP_WIDTH, APP_HEIGHT } from "./const.js";
 
 const container = new PIXI.Container();
 
 const style = new PIXI.TextStyle({
-  fontSize: 24,
+  fontSize: 36,
   fill: 0xffffff,
 });
 const playbackRate = new PIXI.Text("재생 속도: 100%", style);
-playbackRate.anchor.set(1);
-playbackRate.x = 1910;
-playbackRate.y = 1070;
+playbackRate.anchor.set(1, 1);
+playbackRate.x = APP_WIDTH - 10;
+playbackRate.y = APP_HEIGHT - 10;
 
 const title = new PIXI.Text("", style);
 title.anchor.set(0, 1);
 title.x = 10;
-title.y = 1070;
+title.y = APP_HEIGHT - 10;
 
 container.addChild(playbackRate, title);
 

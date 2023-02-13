@@ -10,9 +10,10 @@ export const useStore = defineStore("store", () => {
   const keyBottom = ref(["J", "K", "L", ";"]);
   const userOffset = ref(0);
   const noteSpeedRate = ref(100);
+  const showButtons = ref(false);
   const score = computed(() => loadedScores.value[currentScoreIndex.value]);
-
   const youtubeVolume = ref(100);
+  const playing = ref(false);
 
   return {
     loadedScores,
@@ -23,7 +24,9 @@ export const useStore = defineStore("store", () => {
     keyBottom,
     userOffset,
     noteSpeedRate,
+    showButtons,
     score,
     youtubeVolume,
+    playing,
   };
 });

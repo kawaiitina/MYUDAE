@@ -1,184 +1,179 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useStore } from "../store.js";
 import app from "../modules/app.js";
 
 const store = useStore();
 const {
-  loadedScores,
-  currentScoreIndex,
   sfxVolume,
   youtubeVolume,
   keyTop,
   keyBottom,
   userOffset,
   noteSpeedRate,
-  score,
+  showButtons,
 } = storeToRefs(store);
-const loadString = ref("");
+const touchInputMode = ref(0);
 
 const emit = defineEmits(["youtube-volume-change"]);
 
 const keys = [
-  "Q",
-  "W",
-  "E",
-  "R",
-  "T",
-  "Y",
-  "U",
-  "I",
-  "O",
-  "P",
-  "[",
-  "]",
-  "A",
-  "S",
-  "D",
-  "F",
-  "G",
-  "H",
-  "J",
-  "K",
-  "L",
-  ";",
-  "'",
-  "Z",
-  "X",
-  "C",
-  "V",
-  "B",
-  "N",
-  "M",
-  ",",
-  ".",
-  "/",
+  { label: "Q", value: "KeyQ" },
+  { label: "W", value: "KeyW" },
+  { label: "E", value: "KeyE" },
+  { label: "R", value: "KeyR" },
+  { label: "T", value: "KeyT" },
+  { label: "Y", value: "KeyY" },
+  { label: "U", value: "KeyU" },
+  { label: "I", value: "KeyI" },
+  { label: "O", value: "KeyO" },
+  { label: "P", value: "KeyP" },
+  { label: "[", value: "BracketLeft" },
+  { label: "]", value: "BracketRight" },
+  { label: "A", value: "KeyA" },
+  { label: "S", value: "KeyS" },
+  { label: "D", value: "KeyD" },
+  { label: "F", value: "KeyF" },
+  { label: "G", value: "KeyG" },
+  { label: "H", value: "KeyH" },
+  { label: "J", value: "KeyJ" },
+  { label: "K", value: "KeyK" },
+  { label: "L", value: "KeyL" },
+  { label: ";", value: "Semicolon" },
+  { label: "'", value: "Quote" },
+  { label: "Z", value: "KeyZ" },
+  { label: "X", value: "KeyX" },
+  { label: "C", value: "KeyC" },
+  { label: "V", value: "KeyV" },
+  { label: "B", value: "KeyB" },
+  { label: "N", value: "KeyN" },
+  { label: "M", value: "KeyM" },
+  { label: ",", value: "Comma" },
+  { label: ".", value: "Period" },
+  { label: "/", value: "Slash" },
+];
+const touchInputModes = [
+  { label: "좌우", value: 0 },
+  { label: "상하", value: 1 },
 ];
 
-function loadScore() {
-  loadedScores.value.push(JSON.parse(loadString.value));
-  loadedScores.value.sort((score1, score2) =>
-    score1.title.localeCompare(score2.title)
-  );
-  loadString.value = "";
-}
+onMounted(() => {
+  const saveString = localStorage.getItem("settings");
+  if (saveString) {
+    const data = JSON.parse(saveString);
 
-function deleteScore(selectedScoreIndex) {
-  loadedScores.value.splice(selectedScoreIndex, 1);
-  if (selectedScoreIndex === currentScoreIndex.value) {
-    currentScoreIndex.value = 0;
-    app.setting.changeScore(score.value);
-  } else if (selectedScoreIndex < currentScoreIndex.value) {
-    currentScoreIndex.value -= 1;
+    sfxVolume.value = data.sfxVolume;
+    youtubeVolume.value = data.youtubeVolume;
+    userOffset.value = data.userOffset;
+    noteSpeedRate.value = data.noteSpeedRate;
+    keyTop.value = data.keyTop;
+    keyBottom.value = data.keyBottom;
+
+    app.setting.changeSfxVolume(sfxVolume.value);
+    app.setting.changeUserOffset(userOffset.value);
+    app.setting.changeNoteSpeedRate(noteSpeedRate.value / 100);
+    app.setting.changeKey(keyTop.value, keyBottom.value);
   }
-}
 
-function selectScore(selectedScoreIndex) {
-  currentScoreIndex.value = selectedScoreIndex;
-  app.setting.changeScore(score.value);
-}
+  addEventListener("beforeunload", function () {
+    const data = {
+      sfxVolume: sfxVolume.value,
+      youtubeVolume: youtubeVolume.value,
+      userOffset: userOffset.value,
+      noteSpeedRate: noteSpeedRate.value,
+      keyTop: keyTop.value,
+      keyBottom: keyBottom.value,
+    };
+    localStorage.setItem("settings", JSON.stringify(data));
+  });
+});
 </script>
 
 <template>
-  <q-card class="q-mt-md q-pa-lg" style="width: 960px">
-    <q-card-section class="row fit justify-between">
-      <div class="text-h6 col-2">유튜브 음량</div>
+  <q-card-section class="column">
+    <div class="text-h6 text-bold q-mb-md">입력</div>
+    <q-select
+      v-model="keyTop"
+      label="키 설정(위)"
+      class="q-mb-md"
+      multiple
+      map-options
+      emit-value
+      :options="keys"
+      @update:model-value="app.setting.changeKey(keyTop, keyBottom)"
+    />
+    <q-select
+      v-model="keyBottom"
+      label="키 설정(아래)"
+      class="q-mb-md"
+      multiple
+      map-options
+      emit-value
+      :options="keys"
+      @update:model-value="app.setting.changeKey(keyTop, keyBottom)"
+    />
+    <!-- <q-select
+      v-model="touchInputMode"
+      label="터치 입력"
+      class="q-mb-md"
+      :options="touchInputModes"
+      map-options
+      emit-value
+      @update:model-value="app.setting.changeKey(keyTop, keyBottom)"
+    /> -->
+    <q-input
+      v-model.number="userOffset"
+      type="number"
+      label="오프셋(ms)"
+      class="q-mb-md"
+      @update:model-value="app.setting.changeUserOffset(userOffset)"
+    />
+    <div class="text-h6 text-bold q-mb-md">소리</div>
+    <div class="row q-mb-md">
+      <q-badge>유튜브</q-badge>
       <q-slider
         v-model="youtubeVolume"
         :min="0"
         :max="100"
-        class="col-3"
         @update:model-value="emit('youtube-volume-change', youtubeVolume)"
       />
-      <div class="text-h6 col-2">효과음 음량</div>
+    </div>
+    <div class="row q-mb-md">
+      <q-badge>효과음</q-badge>
       <q-slider
         v-model="sfxVolume"
         :min="0"
         :max="100"
-        class="col-3"
         @update:model-value="app.setting.changeSfxVolume(sfxVolume)"
       />
-    </q-card-section>
-    <q-card-section class="row fit justify-between">
-      <q-select
-        v-model="keyTop"
-        label="키 설정(위)"
-        multiple
-        :options="keys"
-        class="col-3"
-        @update:model-value="app.setting.changeKey(keyTop, keyBottom)"
-      />
-      <q-select
-        v-model="keyBottom"
-        label="키 설정(아래)"
-        multiple
-        :options="keys"
-        class="col-3"
-        @update:model-value="app.setting.changeKey(keyTop, keyBottom)"
-      />
-      <q-input
-        v-model.number="userOffset"
-        type="number"
-        label="오프셋(ms)"
-        class="col-2"
-        @update:model-value="app.setting.changeUserOffset(userOffset)"
-      />
-      <q-input
-        v-model.number="noteSpeedRate"
-        type="number"
-        label="노트 속도 배율(%)"
-        class="col-2"
-        :min="10"
-        :max="1000"
-        @update:model-value="
-          app.setting.changeNoteSpeedRate(noteSpeedRate / 100)
-        "
-      />
-    </q-card-section>
-    <q-separator />
-    <q-card-section>
-      <div class="row justify-between">
-        <q-input
-          outlined
-          v-model="loadString"
-          label="불러오기"
-          placeholder="여기에 붙여넣고 엔터키를 누르거나 오른쪽 버튼을 누르세요."
-          @keydown.enter.prevent="loadScore"
-          class="col-9"
-        />
-        <q-btn
-          color="white"
-          text-color="black"
-          label="불러오기"
-          @click="loadScore"
-          class="col-2"
-        />
-      </div>
-      <q-list v-if="loadedScores.length > 0" bordered separator class="q-mt-md">
-        <q-item
-          v-for="(loadedScore, i) in loadedScores"
-          clickable
-          v-ripple
-          @click="selectScore(i)"
-          :class="currentScoreIndex === i ? 'text-bold' : ''"
-        >
-          <q-item-section>
-            {{ loadedScore.title }} - {{ loadedScore.artist }}
-          </q-item-section>
-          <q-item-section side>
-            <q-btn round flat icon="close" @click.stop="deleteScore(i)" />
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </q-card-section>
-    <q-separator />
-    <q-card-section>
-      space: 재시작 <br />
-      -: 느리게, +: 빠르게 (백스페이스 옆에 있는 것)<br />
-      esc: 정지
-    </q-card-section>
-  </q-card>
+    </div>
+    <div class="text-h6 text-bold q-mb-md">화면</div>
+    <q-input
+      v-model.number="noteSpeedRate"
+      type="number"
+      label="노트 속도 (%)"
+      class="q-mb-md"
+      :min="10"
+      :max="1000"
+      @update:model-value="app.setting.changeNoteSpeedRate(noteSpeedRate / 100)"
+    />
+    <q-checkbox
+      v-model="showButtons"
+      label="재생, 일시정지, 속도 조절 버튼 표시"
+      class="q-mb-md"
+    />
+    <div class="text-h6 text-bold q-mb-md">단축키</div>
+    <q-list dense>
+      <q-item> space: 재시작 </q-item>
+      <q-item> -: 느리게 </q-item>
+      <q-item> +: 빠르게 </q-item>
+      <q-item> esc: 정지 </q-item>
+    </q-list>
+    <q-separator class="q-mt-md q-mb-md" />
+    모바일 지원 안 합니다.<br />
+    이 사이트는 뮤즈대시, 페로페로 공식 웹사이트가 아닙니다.
+  </q-card-section>
 </template>
 
 <style scoped></style>

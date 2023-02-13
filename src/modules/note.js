@@ -69,7 +69,8 @@ class Note {
 const note = {
   container: new PIXI.Container(),
   notes: [],
-  init(score, playbackRate) {
+  init() {
+    const { score, playbackRate } = setting;
     score.notes.top.forEach((note) =>
       this.notes.push(new Note(note, TOP, score, playbackRate))
     );

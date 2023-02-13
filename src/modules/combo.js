@@ -1,4 +1,5 @@
 import * as PIXI from "pixi.js";
+import { APP_WIDTH } from "./const.js";
 import animate from "./animate.js";
 import { fonts } from "./pixi.js";
 
@@ -32,7 +33,7 @@ comboUnit.y = 70;
 const container = new PIXI.Container();
 container.pivot.x = container.width / 2;
 container.pivot.y = container.height / 2;
-container.x = container.pivot.x + 960;
+container.x = container.pivot.x + APP_WIDTH / 2;
 container.y = container.pivot.y + 150;
 container.addChild(comboText, comboUnit);
 animate.repeat(

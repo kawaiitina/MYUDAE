@@ -1,3 +1,4 @@
+import * as PIXI from "pixi.js";
 import note from "./note.js";
 import longNote from "./longnote.js";
 import setting from "./setting.js";
@@ -6,6 +7,7 @@ const recentKeydowns = [];
 const recentKeyups = [];
 let startTime;
 
+// 키보드
 function handleKeydown(event) {
   if (event.repeat) {
     return;
@@ -31,6 +33,12 @@ function handleKeyup(event) {
     releasedKey.pressed = false;
   }
 }
+
+// 터치
+const container = new PIXI.Container();
+const topButton = new PIXI.Container();
+const bottomButton = new PIXI.Container();
+
 function init(_startTime) {
   document.body.addEventListener("keydown", handleKeydown);
   document.body.addEventListener("keyup", handleKeyup);

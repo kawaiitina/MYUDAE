@@ -27,7 +27,8 @@ class Bar {
 const bar = {
   container: new PIXI.Container(),
   bars: [],
-  init(score, playbackRate) {
+  init() {
+    const { score, playbackRate } = setting;
     for (let i = 0; i < score.beats; i += 1) {
       this.bars.push(new Bar(i, score, playbackRate));
     }
