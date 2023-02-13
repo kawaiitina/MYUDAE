@@ -14,7 +14,7 @@ const {
   noteSpeedRate,
   showButtons,
 } = storeToRefs(store);
-const touchInputMode = ref(0);
+// const touchInputMode = ref(0);
 
 const emit = defineEmits(["youtube-volume-change"]);
 
@@ -53,10 +53,10 @@ const keys = [
   { label: ".", value: "Period" },
   { label: "/", value: "Slash" },
 ];
-const touchInputModes = [
-  { label: "좌우", value: 0 },
-  { label: "상하", value: 1 },
-];
+// const touchInputModes = [
+//   { label: "좌우", value: 0 },
+//   { label: "상하", value: 1 },
+// ];
 
 onMounted(() => {
   const saveString = localStorage.getItem("settings");

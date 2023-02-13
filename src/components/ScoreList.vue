@@ -9,11 +9,15 @@ const { loadedScores, currentScoreIndex, score } = storeToRefs(store);
 const loadString = ref("");
 
 function loadScore() {
-  loadedScores.value.push(JSON.parse(loadString.value));
+  const newScore = JSON.parse(loadString.value);
+  loadedScores.value.push(newScore);
   loadedScores.value.sort((score1, score2) =>
     score1.title.localeCompare(score2.title)
   );
   loadString.value = "";
+  selectScore(
+    loadedScores.value.findIndex((score) => score.title === newScore.title)
+  );
 }
 
 function deleteScore(selectedScoreIndex) {

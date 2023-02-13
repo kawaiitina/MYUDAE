@@ -6,8 +6,8 @@ export const useStore = defineStore("store", () => {
   const currentScoreIndex = ref(0);
   const playbackRate = ref(100);
   const sfxVolume = ref(50);
-  const keyTop = ref(["A", "S", "D", "F"]);
-  const keyBottom = ref(["J", "K", "L", ";"]);
+  const keyTop = ref(["KeyA", "KeyS", "KeyD", "KeyF"]);
+  const keyBottom = ref(["KeyJ", "KeyK", "KeyL", "Semicolon"]);
   const userOffset = ref(0);
   const noteSpeedRate = ref(100);
   const showButtons = ref(false);
