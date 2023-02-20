@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useStore } from "../store.js";
 import app from "../modules/app.js";
@@ -14,8 +14,6 @@ const {
   noteSpeedRate,
   showButtons,
 } = storeToRefs(store);
-// const touchInputMode = ref(0);
-
 const emit = defineEmits(["youtube-volume-change"]);
 
 const keys = [
@@ -53,10 +51,6 @@ const keys = [
   { label: ".", value: "Period" },
   { label: "/", value: "Slash" },
 ];
-// const touchInputModes = [
-//   { label: "좌우", value: 0 },
-//   { label: "상하", value: 1 },
-// ];
 
 onMounted(() => {
   const saveString = localStorage.getItem("settings");
@@ -91,7 +85,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <q-card-section class="column">
+  <q-card-section class="column q-pt-xl">
     <div class="text-h6 text-bold q-mb-md">입력</div>
     <q-select
       v-model="keyTop"
@@ -113,15 +107,6 @@ onMounted(() => {
       :options="keys"
       @update:model-value="app.setting.changeKey(keyTop, keyBottom)"
     />
-    <!-- <q-select
-      v-model="touchInputMode"
-      label="터치 입력"
-      class="q-mb-md"
-      :options="touchInputModes"
-      map-options
-      emit-value
-      @update:model-value="app.setting.changeKey(keyTop, keyBottom)"
-    /> -->
     <q-input
       v-model.number="userOffset"
       type="number"
@@ -166,13 +151,15 @@ onMounted(() => {
     <div class="text-h6 text-bold q-mb-md">단축키</div>
     <q-list dense>
       <q-item> space: 재시작 </q-item>
-      <q-item> -: 느리게 </q-item>
-      <q-item> +: 빠르게 </q-item>
-      <q-item> esc: 정지 </q-item>
+      <q-item> -: 5% 느리게 </q-item>
+      <q-item> +: 5% 빠르게 </q-item>
+      <q-item> esc: 정지, 메뉴 닫기 </q-item>
     </q-list>
     <q-separator class="q-mt-md q-mb-md" />
-    모바일 지원 안 합니다.<br />
-    이 사이트는 뮤즈대시, 페로페로 공식 웹사이트가 아닙니다.
+    <p>
+      모바일 지원 안 합니다.<br />
+      이 사이트는 뮤즈대시, 페로페로게임즈의 공식 웹사이트가 아닙니다.
+    </p>
   </q-card-section>
 </template>
 

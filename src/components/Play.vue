@@ -57,17 +57,32 @@ function handleStateChange() {
   // 3 – 버퍼링
   // 5 – 동영상 신호
   if (youtube.value.getPlayerState() === 1) {
-    app.play(youtube.value.getCurrentTime() * 1000);
+    if (playing.value) {
+      app.play(youtube.value.getCurrentTime() * 1000);
+    } else {
+      // src 바뀌었을 때 자동재생 방지
+      youtube.value.pauseVideo();
+    }
   }
-}
-
-function getWidth() {
-  const w = document.body.clientWidth;
-  document.body.clientWidth;
 }
 
 onMounted(() => {
   document.getElementById("pixi").appendChild(app.pixi.view);
+  document.body.addEventListener("keydown", function (event) {
+    if (event.repeat) {
+      return;
+    }
+    if (event.code === "Space") {
+      event.preventDefault();
+      playing ? restart() : play();
+    } else if (event.code === "Equal") {
+      setPlaybackRate(playbackRate.value + 5);
+    } else if (event.code === "Minus") {
+      setPlaybackRate(playbackRate.value - 5);
+    } else if (event.code === "Escape") {
+      stop();
+    }
+  });
 });
 </script>
 
@@ -83,14 +98,13 @@ onMounted(() => {
     />
     <div id="pixi"></div>
     <Controller
-      id="controller"
       @play="play"
       @stop="stop"
       @restart="restart"
       @set-playback-rate="setPlaybackRate"
       @toggle-fullscreen="toggleFullscreen"
     />
-    <Menu id="menu" @youtube-volume-change="youtube.setVolume(youtubeVolume)" />
+    <Menu @youtube-volume-change="youtube.setVolume(youtubeVolume)" />
   </div>
 </template>
 
@@ -98,15 +112,6 @@ onMounted(() => {
 #pixi {
   position: absolute;
   top: 0;
-}
-#controller {
-  position: absolute;
-  top: 0;
-  opacity: 0.8;
-}
-#menu {
-  position: absolute;
-  top: 0;
-  opacity: 0.95;
+  pointer-events: none;
 }
 </style>

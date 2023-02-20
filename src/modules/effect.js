@@ -112,6 +112,8 @@ class Scatter {
       );
       graphics.drawStar(x, y, 5, outerRadius, innerRadius);
       graphics.endFill();
+      graphics.x = graphics.pivot.x + x;
+      graphics.y = graphics.pivot.y + y;
       this.container.addChild(graphics);
       this.stars.push({
         graphics,
@@ -135,6 +137,7 @@ class Scatter {
     this.stars.forEach((star) => {
       const x = star.vx * progress;
       const y = star.vy * progress + (g * progress ** 2) / 2;
+
       star.graphics.x = star.graphics.pivot.x + x;
       star.graphics.y = star.graphics.pivot.y + y;
       star.graphics.rotation = star.omega * progress;

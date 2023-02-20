@@ -56,8 +56,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <q-card-section class="q-pa-lg">
-    <div class="text-h6 q-mb-lg">악보 목록</div>
+  <q-card-section class="q-pa-lg q-pt-xl">
+    <div class="text-h6 text-bold q-mb-lg">악보 목록</div>
     <div class="row justify-between">
       <q-input
         outlined
