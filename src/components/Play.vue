@@ -87,7 +87,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div ref="view" style="width: 1920px; height: 1080px; margin-bottom: 120px">
+  <div ref="view" style="width: 1920px; height: 1080px">
     <YouTube
       :src="score?.src || ''"
       width="1920"
