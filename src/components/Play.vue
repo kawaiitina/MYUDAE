@@ -112,6 +112,6 @@ onMounted(() => {
 #pixi {
   position: absolute;
   top: 0;
-  pointer-events: none;
+  /* pointer-events: none; */
 }
 </style>
