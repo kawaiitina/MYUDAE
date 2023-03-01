@@ -112,8 +112,6 @@ class Scatter {
       );
       graphics.drawStar(x, y, 5, outerRadius, innerRadius);
       graphics.endFill();
-      graphics.x = graphics.pivot.x + x;
-      graphics.y = graphics.pivot.y + y;
       this.container.addChild(graphics);
       this.stars.push({
         graphics,
